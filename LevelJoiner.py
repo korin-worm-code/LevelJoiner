@@ -198,7 +198,9 @@ for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._mag
     
     wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
                                             func.ST_SetSRID(WormPoint.wgs84_pt,4326),
-                                            km_20_degs)).all()
+                                            km_20_degs)).order_by(WormLevelPoints.worm_level_id,
+                                                                  WormLevelPoints.worm_seg_id,
+                                                                  WormLevelPoints.seg_sequence_num).all()
     for i in wq:
     	sgmt = i[1]
     	point = i[0]
