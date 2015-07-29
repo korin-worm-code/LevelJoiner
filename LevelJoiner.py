@@ -180,8 +180,8 @@ wp = aliased(WormPoint)
 
 # THE MAIN OUTER LOOP
 # We are looping over everyything in point_query, with extra restrictions, ordering, and limits...
-for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\                         
-	.order_by(WormLevelPoints.worm_seg_id,
+for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\
+    .order_by(WormLevelPoints.worm_seg_id,
               WormLevelPoints.seg_sequence_num).limit(100):
     end_pt = p.WormPoint
     print end_pt
