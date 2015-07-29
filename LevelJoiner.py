@@ -179,7 +179,7 @@ wsm_az_sds = []
 seg_rats = []
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
-km_1000_degs = kmToDegrees(1000.)
+km_20_degs = kmToDegrees(20.)
 
 # This is just a variable to hold the level from which we are going to do our database query.
 lvl_id = 2
@@ -194,7 +194,15 @@ wp = aliased(WormPoint)
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
 for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
-    print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
+    #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
+    
+    wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
+                                            func.ST_SetSRID(WormPoint.wgs84_pt,4326),
+                                            km_20_degs)).all()
+    
+    
+    
+    
     
 
 
