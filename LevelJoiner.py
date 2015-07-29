@@ -179,7 +179,7 @@ wsm_az_sds = []
 seg_rats = []
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
-km_20_degs = kmToDegrees(20.)
+km_10_degs = kmToDegrees(10.)
 
 # This is just a variable to hold the level from which we are going to do our database query.
 lvl_id = 2
@@ -193,19 +193,19 @@ wp = aliased(WormPoint)
 #    .order_by(WormLevelPoints.worm_seg_id,
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
-for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_).limit(2):
+for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
                                             func.ST_SetSRID(WormPoint.wgs84_pt,4326),
-                                            km_20_degs)).order_by(WormLevelPoints.worm_level_id,
+                                            km_10_degs)).order_by(WormLevelPoints.worm_level_id,
                                                                   WormLevelPoints.worm_seg_id,
                                                                   WormLevelPoints.seg_sequence_num).all()
-    for i in wq:
-    	sgmt = i[1]
-    	point = i[0]
-    	print point.x, point.y, point.z, point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
-    print 'NEW EARTHQUAKE'
+    #for i in wq:
+    # 	sgmt = i[1]
+    #	point = i[0]
+    	#print point.x, point.y, point.z, point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    #print 'NEW EARTHQUAKE'
     
     
     
