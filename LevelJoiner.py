@@ -204,7 +204,7 @@ for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._mag
     for i in wq:
     	sgmt = i[1]
     	point = i[0]
-    	print point.x, point.y, point.z, point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.seg_sequence_num, sgmt.worm_seg_id, sgmt.worm_level_id
+    	print point.x, point.y, point.z, point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     print 'NEW EARTHQUAKE'
     
     
