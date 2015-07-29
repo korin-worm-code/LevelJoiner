@@ -194,7 +194,7 @@ wp = aliased(WormPoint)
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
 for p in eq_query:
-    print p.wkb_geometry.ST_AsText()
+    print p._latitude_, p._longitude_, p._depth_km_
     
 
 
