@@ -123,6 +123,11 @@ meta = MetaData()
 #class Wsm2008(Base):
 #    __table__ = Table('wsm2008', meta, autoload=True, autoload_with=engine)
 
+# This is a black magic function, that hooks up an existing database table, but that still allows
+# for python object access to the database data. 
+# We will hook up the earthquake hypocenters
+class AppBasinEQs(Base):
+    __table__ = Table('clipped_app_basin_merged_eqs', meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -157,8 +162,12 @@ def kmToDegrees(km):
 point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_point_id == WormLevelPoints.point_id)
 
 
+
 # Probably not going to need this; kept as an example as above in WSM2008(Base) class example.
 #wsm08_query = session.query(Wsm2008).filter(Wsm2008.QUALITY.in_('ABC'))
+
+
+eq_query = session.query(AppBasinEQs).filter(AppBasinEQs._catalog_ = 'ANF')
 
 
 # temporary data structures for performing our computations
@@ -180,10 +189,12 @@ wp = aliased(WormPoint)
 
 # THE MAIN OUTER LOOP
 # We are looping over everyything in point_query, with extra restrictions, ordering, and limits...
-for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\
-    .order_by(WormLevelPoints.worm_seg_id,
-              WormLevelPoints.seg_sequence_num).limit(100):
-    print p.WormPoint
+#for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\
+#    .order_by(WormLevelPoints.worm_seg_id,
+#              WormLevelPoints.seg_sequence_num).limit(100):
+#    print p.WormPoint
+for p in eq_query:
+    print p._catalog_
     
 
 
