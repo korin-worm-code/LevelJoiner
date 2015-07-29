@@ -193,7 +193,7 @@ wp = aliased(WormPoint)
 #    .order_by(WormLevelPoints.worm_seg_id,
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
-for p in eq_query:
+for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.):
     print p._latitude_, p._longitude_, p._depth_km_
     
 
