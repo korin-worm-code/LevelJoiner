@@ -167,7 +167,7 @@ point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_poi
 #wsm08_query = session.query(Wsm2008).filter(Wsm2008.QUALITY.in_('ABC'))
 
 
-eq_query = session.query(AppBasinEQs).filter(AppBasinEQs._catalog_ = 'ANF')
+eq_query = session.query(AppBasinEQs).filter(AppBasinEQs._catalog_ == 'ANF')
 
 
 # temporary data structures for performing our computations
