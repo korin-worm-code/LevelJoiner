@@ -199,7 +199,10 @@ for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._mag
     wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
                                             func.ST_SetSRID(WormPoint.wgs84_pt,4326),
                                             km_20_degs)).all()
-    print wq
+    for i in wq:
+    	sgmt = i[1]
+    	print sgmt.azimuth, sgmt.line_grad, sgmt.seg_sequence_num, sgmt.word_seg_id
+    print 'NEW EARTHQUAKE'
     
     
     
