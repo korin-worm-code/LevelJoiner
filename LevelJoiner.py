@@ -201,10 +201,13 @@ for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._mag
                                             km_10_degs)).order_by(WormLevelPoints.worm_level_id,
                                                                   WormLevelPoints.worm_seg_id,
                                                                   WormLevelPoints.seg_sequence_num).all()
-    #for i in wq:
-    # 	sgmt = i[1]
-    #	point = i[0]
-    	#print point.x, point.y, point.z, point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    for i in wq:
+     	sgmt = i[1]
+    	end_point = i[0]
+    	start_point = session.query(WormPoints).filter(worm_point_id == sgmt.start_pt_id).one()
+    	print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
+    	
+    	#print end_point.x, end_point.y, end_point.z, end_point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     print 'NEW EARTHQUAKE'
     
     
