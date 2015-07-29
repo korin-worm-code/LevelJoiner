@@ -99,7 +99,7 @@ class WormLevelPoints(Base):
 
 
 # Hooking things up to the database system
-db = 'postgresql://frank@localhost/frank'
+db = 'postgresql://frank:f00bar@localhost/frank'
 engine = create_engine('%s'%db, echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
