@@ -158,9 +158,11 @@ def kmToDegrees(km):
 # This is actually the head end of more restrictive filterings of the database tables
 point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_point_id == WormLevelPoints.point_id)
 
-all_worm_points = np.array(point_query.all())
+all_worm_points = point_query.all()
 
 worm_pt_coords = np.array([[w.x,w.y,w.z] for w in all_worm_points])
+
+all_worm_points = np.array(all_worm_points)
 
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
