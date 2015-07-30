@@ -233,9 +233,9 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
         if i == end_idx:
             break
         limited_wq += [i]
-    limited_wq = np.array(limited_wq)
     
     sorted_levels = np.argsort(worm_sgmt_levels[limited_wq])
+    limited_wq = np.array(limited_wq)
     print sorted_levels, worm_sgmt_levels[limited_wq[sorted_levels]]
 
     
