@@ -211,7 +211,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     	print "No Worms Nearby."
     	continue
     
-    print eq_pt, wq, all_worm_data[wq]
+    print eq_pt, wq, all_worm_data[wq][:,1]
     
     
     
