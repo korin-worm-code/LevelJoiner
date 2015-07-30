@@ -213,17 +213,24 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     if len(wq) == 0:
     	print "No Worms Nearby."
     	continue
-    import pdb; pdb.set_trace()
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
-    for i,idx in enumerate(wq):
-    	if idx == end_idx:
-    		continue
-    	sgmt = all_worm_data[idx][1]
-    	print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    foo = np.argsort(all_worm_data[wq][:,1],order=[worm_level_id, worm_seg_id, seg_sequence_num])
+    
+	for idx in foo:
+		if idx == end_idx:
+			continue
+		sgmt = all_worm_data[wq[idx]][1]
+    	print idx, dq[idx], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    
+    #for i,idx in enumerate(wq):
+    #	if idx == end_idx:
+    #		continue
+    #	sgmt = all_worm_data[idx][1]
+    #	print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     
     
     
