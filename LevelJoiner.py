@@ -167,7 +167,7 @@ worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
 
 # Now create the ndarray of the results from the query. 
 # N.B. Both the end point and the edge are contained in each element.
-all_worm_data = np.array(all_worm_points)
+all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_level_points',WormLevelPoints)])
 
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
