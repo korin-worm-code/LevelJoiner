@@ -160,7 +160,7 @@ point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_poi
 
 all_worm_points = point_query.all()
 
-worm_pt_coords = np.array([[w.x,w.y,w.z] for w in all_worm_points])
+worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
 
 all_worm_points = np.array(all_worm_points)
 
