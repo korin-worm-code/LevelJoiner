@@ -219,7 +219,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     #wq = worm_kd.query_ball_point(eq_pt,r)
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
-    if len(wq) == 0:
+    if (wq == end_idx).all():
         print "No Worms Nearby."
         continue
     
@@ -233,6 +233,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
         if i == end_idx:
             break
         limited_wq += [i]
+        
     
     sorted_levels = np.argsort(worm_sgmt_levels[limited_wq])
     limited_wq = np.array(limited_wq)
