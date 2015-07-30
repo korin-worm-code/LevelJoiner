@@ -213,13 +213,13 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     if len(wq) == 0:
     	print "No Worms Nearby."
     	continue
+    
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
     foo = np.argsort(all_worm_data[wq][:,1],order=[worm_level_id, worm_seg_id, seg_sequence_num])
-    
 	for idx in foo:
 		if idx == end_idx:
 			continue
