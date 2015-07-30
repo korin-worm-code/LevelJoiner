@@ -173,6 +173,8 @@ worm_sgmt_levels = np.array([w[1].worm_level_id for w in all_worm_points])
 worm_sgmt_ids = np.array([w[1].worm_seg_id for w in all_worm_points])
 worm_sgmt_seq_num = np.array([w[1].seg_sequence_num for w in all_worm_points])
 
+worm_rec = np.rec.fromarrays([worm_sgmt_levels, worm_sgmt_ids, worm_sgmt_seq_num])
+
 
 # Now create the ndarray of the results from the query. 
 # N.B. Both the end point and the edge are contained in each element.
@@ -236,7 +238,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
         limited_wq += [i]
         
     
-    sorted_levels = np.argsort(worm_sgmt_levels[limited_wq])
+    sorted_levels = np.argsort(worm_rec[limited_wq])
     limited_wq = np.array(limited_wq)
     print p._depth_km_, worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
     
