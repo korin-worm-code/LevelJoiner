@@ -162,8 +162,17 @@ point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_poi
 # returns both WormPoint and WormLevelPoints as a tuple(?) for each item
 all_worm_points = point_query.all()
 
+# It's actually simpler to dig the relevant bits out from the data structures returned by the database now
+# than trying to deal with the headache of getting all of the indexing correct everywhere else.
+# Think of it as a "once and only once" for getting the bloody indexing right...
+
 # Build an array of 3-coords for each worm point to feed into the kd-tree for indexing
 worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
+
+worm_sgmt_levels = np.array([w[1].worm_level_id for w in all_worm_points])
+worm_sgmt_ids = np.array([w[1].worm_seg_id for w in all_worm_points])
+worm_sgmt_seq_num = np.array([w[1].seg_sequence_num for w in all_worm_points])
+
 
 # Now create the ndarray of the results from the query. 
 # N.B. Both the end point and the edge are contained in each element.
@@ -219,12 +228,9 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
-    foo = np.argsort(all_worm_data[wq][:,1],order=[worm_level_id, worm_seg_id, seg_sequence_num])
-    for idx in foo:
-        if idx == end_idx:
-            continue
-        sgmt = all_worm_data[wq[idx]][1]
-        print idx, dq[idx], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    sorted_levels = np.argsort(worm_sgmt_levels[wq])
+    print sorted_levels
+
     
     #for i,idx in enumerate(wq):
     #   if idx == end_idx:
