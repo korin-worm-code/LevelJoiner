@@ -119,13 +119,6 @@ if not engine.dialect.has_table(connect, levels_points_name):
     
 meta = MetaData()
 
-# This is a black magic function, that hooks up an existing database table, but that still allows
-# for python object access to the database data. 
-# We actually won't use this particular table in this project, but I'll keep it as an example of
-# how to do the job, so that we could hook up (e.g.) earthquake hypocenters or Euler solution points
-# in a similar fashion if we are getting lazy
-#class Wsm2008(Base):
-#    __table__ = Table('wsm2008', meta, autoload=True, autoload_with=engine)
 
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
@@ -165,17 +158,15 @@ def kmToDegrees(km):
 # This is actually the head end of more restrictive filterings of the database tables
 point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_point_id == WormLevelPoints.point_id)
 
+all_worm_points = np.array(point_query.all())
 
+worm_pt_coords = np.array([[w.x,w.y,w.z] for w in all_worm_points])
 
-# Probably not going to need this; kept as an example as above in WSM2008(Base) class example.
-#wsm08_query = session.query(Wsm2008).filter(Wsm2008.QUALITY.in_('ABC'))
+worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
-
-eq_query = session.query(AppBasinEQs).filter(AppBasinEQs._catalog_ == 'ANF')
-
-
-#Korin's attempts at using KDTree
-earthquakes = spatial.KDTree(eq_query)
+eq_query = session.query(AppBasinEQs,
+						 func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_X(),
+						 func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_Y() ).filter(AppBasinEQs._catalog_ == 'ANF')
 
 
 # temporary data structures for performing our computations
@@ -201,20 +192,26 @@ wp = aliased(WormPoint)
 #    .order_by(WormLevelPoints.worm_seg_id,
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
-for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
+r = 10000.
+for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
-        
-    wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
-                                            func.ST_SetSRID(WormPoint.wgs84_pt,4326),
-                                            km_10_degs)).order_by(WormLevelPoints.worm_level_id,
-                                                                  WormLevelPoints.worm_seg_id,
-                                                                  WormLevelPoints.seg_sequence_num).all()
-    for i in wq:
-     	sgmt = i[1]
-    	end_point = i[0]
-    	start_point = session.query(WormPoint).filter(WormPoint.worm_point_id == sgmt.start_point_id).one()
-    	print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
+    eq_pt = [p_lon,p_lat,p._depth_km_]
+    
+    wq = worm_kd.query_ball_point(eq_pt,r)
+    
+    print eq_pt, wq
+    
+    #wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
+    #                                        func.ST_SetSRID(WormPoint.wgs84_pt,4326),
+    #                                        km_10_degs)).order_by(WormLevelPoints.worm_level_id,
+    #                                                              WormLevelPoints.worm_seg_id,
+    #                                                              WormLevelPoints.seg_sequence_num).all()
+    #for i in wq:
+    # 	sgmt = i[1]
+    #	end_point = i[0]
+    #	start_point = session.query(WormPoint).filter(WormPoint.worm_point_id == sgmt.start_point_id).one()
+    #	print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
     	
     	#print end_point.x, end_point.y, end_point.z, end_point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     print 'NEW EARTHQUAKE'
