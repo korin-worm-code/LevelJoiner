@@ -230,7 +230,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     limited_wq = []
     for i in wq:
-        if i = end_idx:
+        if i == end_idx:
             break
         limited_wq += [i]
     
