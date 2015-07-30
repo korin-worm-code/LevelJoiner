@@ -174,7 +174,7 @@ worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
 worm_sgmt_levels = np.array([w[1].worm_level_id for w in all_worm_points])
 # Creating an array out of the worm segments
 worm_sgmt_ids = np.array([w[1].worm_seg_id for w in all_worm_points])
-# Creating an array out of the worm segment sequences
+# Creating an array out of the sequential worm pieces
 worm_sgmt_seq_num = np.array([w[1].seg_sequence_num for w in all_worm_points])
 
 
@@ -226,11 +226,11 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,1000.*p._depth_km_]
     
-    #wq = worm_kd.query_ball_point(eq_pt,r)
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     if (wq == end_idx).all():
         print "No Worms Nearby."
         continue
+    
     
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
@@ -247,7 +247,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     # But they are still valid for the individual arrays.
     sorted_levels = np.argsort(worm_rec[limited_wq])
     limited_wq = np.array(limited_wq)
-    print p._depth_km_, worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
+    print p._depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
     
     #for i,idx in enumerate(wq):
     #   if idx == end_idx:
