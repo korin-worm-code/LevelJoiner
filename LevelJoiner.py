@@ -158,12 +158,18 @@ def kmToDegrees(km):
 # This is actually the head end of more restrictive filterings of the database tables
 point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_point_id == WormLevelPoints.point_id)
 
+# Pull all worm data structures from the database; 
+# returns both WormPoint and WormLevelPoints as a tuple(?) for each item
 all_worm_points = point_query.all()
 
+# Build an array of 3-coords for each worm point to feed into the kd-tree for indexing
 worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
 
-all_worm_points = np.array(all_worm_points)
+# Now create the ndarray of the results from the query. 
+# N.B. Both the end point and the edge are contained in each element.
+all_worm_data = np.array(all_worm_points)
 
+# Creating SciPy KDTree to speed up earthquake-worm point comparison
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
 eq_query = session.query(AppBasinEQs,
@@ -202,7 +208,9 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     wq = worm_kd.query_ball_point(eq_pt,r)
     
-    print eq_pt, wq
+    print eq_pt, wq, all_worm_data[wq][1]
+    
+    
     
     #wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
     #                                        func.ST_SetSRID(WormPoint.wgs84_pt,4326),
