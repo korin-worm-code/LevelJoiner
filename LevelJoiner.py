@@ -83,10 +83,10 @@ class WormLevelPoints(Base):
     worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
     # Database magic that links entries in this table with entries in another table
     worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
-	# This is an index number internal to each worm segment, numbering the edges
-	# FIXME (maybe) This terminology needs to be cleaned up.
+    # This is an index number internal to each worm segment, numbering the edges
+    # FIXME (maybe) This terminology needs to be cleaned up.
     seg_sequence_num = Column(Integer)
-	# This holds the PostGIS geometry structure for a single edge, in some native CRS.
+    # This holds the PostGIS geometry structure for a single edge, in some native CRS.
     line_segmt = Column(Geometry('LINESTRING'),index=True)
     # This scalar gradient value is derived from the average of the point grads on either end of the edge
     # Currently, the upstream code is doing that for the LOG(value), so this is in fact now
@@ -131,7 +131,7 @@ class AppBasinEQs(Base):
 def gc_dist(lat1,lon1,lat2,lon2):
     # cribbed from <http://code.activestate.com/recipes/
     # 576779-calculating-distance-between-two-geographic-points/>
-	# Radius of a sphere with the equivalent volume to the Earth
+    # Radius of a sphere with the equivalent volume to the Earth
     R = 6371.0
     lat1 = radians(lat1)
     lon1 = radians(lon1)
@@ -148,7 +148,7 @@ def gc_dist(lat1,lon1,lat2,lon2):
 
 # Utility function: how many degrees away is something km apart on the surface of the Earth
 def kmToDegrees(km):
-	# 6371 is again the radius of the Earth
+    # 6371 is again the radius of the Earth
     return 360. * km / (6371.*2.*pi)
 
 
@@ -174,8 +174,8 @@ all_worm_data = np.array(all_worm_points)
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
 eq_query = session.query(AppBasinEQs,
-						 func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_X(),
-						 func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_Y() ).filter(AppBasinEQs._catalog_ == 'ANF')
+                         func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_X(),
+                         func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_Y() ).filter(AppBasinEQs._catalog_ == 'ANF')
 
 
 # temporary data structures for performing our computations
@@ -211,8 +211,8 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     #wq = worm_kd.query_ball_point(eq_pt,r)
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     if len(wq) == 0:
-    	print "No Worms Nearby."
-    	continue
+        print "No Worms Nearby."
+        continue
     
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
@@ -220,17 +220,17 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     #print eq_pt, wq, dq
     
     foo = np.argsort(all_worm_data[wq][:,1],order=[worm_level_id, worm_seg_id, seg_sequence_num])
-	for idx in foo:
-		if idx == end_idx:
-			continue
-		sgmt = all_worm_data[wq[idx]][1]
-    	print idx, dq[idx], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    for idx in foo:
+        if idx == end_idx:
+            continue
+        sgmt = all_worm_data[wq[idx]][1]
+        print idx, dq[idx], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     
     #for i,idx in enumerate(wq):
-    #	if idx == end_idx:
-    #		continue
-    #	sgmt = all_worm_data[idx][1]
-    #	print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    #   if idx == end_idx:
+    #       continue
+    #   sgmt = all_worm_data[idx][1]
+    #   print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     
     
     
@@ -243,12 +243,12 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     #                                                              WormLevelPoints.worm_seg_id,
     #                                                              WormLevelPoints.seg_sequence_num).all()
     #for i in wq:
-    # 	sgmt = i[1]
-    #	end_point = i[0]
-    #	start_point = session.query(WormPoint).filter(WormPoint.worm_point_id == sgmt.start_point_id).one()
-    #	print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
-    	
-    	#print end_point.x, end_point.y, end_point.z, end_point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+    #   sgmt = i[1]
+    #   end_point = i[0]
+    #   start_point = session.query(WormPoint).filter(WormPoint.worm_point_id == sgmt.start_point_id).one()
+    #   print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
+        
+        #print end_point.x, end_point.y, end_point.z, end_point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     print 'NEW EARTHQUAKE'
     
     
