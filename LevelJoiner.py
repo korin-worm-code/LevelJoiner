@@ -202,6 +202,7 @@ wp = aliased(WormPoint)
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
 r = 10000.
+end_idx = worm_point_coords.shape[0]
 for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
@@ -219,6 +220,8 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     #print eq_pt, wq, dq
     
     for i,idx in enumerate(wq):
+    	if idx == end_idx:
+    		continue
     	sgmt = all_worm_data[idx][1]
     	print idx, dq[i], sgmt.worm_seg_id, sgmt.worm_level_id
     
