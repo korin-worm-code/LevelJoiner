@@ -169,6 +169,7 @@ worm_pt_coords = np.array([[w[0].x,w[0].y,w[0].z] for w in all_worm_points])
 # N.B. Both the end point and the edge are contained in each element.
 all_worm_data = np.array(all_worm_points)
 
+
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
@@ -206,12 +207,16 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     eq_pt = [p_lon,p_lat,p._depth_km_]
     
-    wq = worm_kd.query_ball_point(eq_pt,r)
+    #wq = worm_kd.query_ball_point(eq_pt,r)
+    dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     if len(wq) == 0:
     	print "No Worms Nearby."
     	continue
     
-    print eq_pt, wq, all_worm_data[wq][:,1]
+    # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
+    # The rows of which are the things being indexed, while the first column is a WormPoint
+    # and the second column is a WormLevelPoints.
+    print eq_pt, wq, dq, all_worm_data[wq][:,1]
     
     
     
