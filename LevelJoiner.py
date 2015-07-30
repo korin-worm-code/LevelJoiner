@@ -223,7 +223,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     	if idx == end_idx:
     		continue
     	sgmt = all_worm_data[idx][1]
-    	print idx, dq[i], sgmt.worm_seg_id, sgmt.worm_level_id
+    	print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
     
     
     
