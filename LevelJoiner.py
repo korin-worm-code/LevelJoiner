@@ -10,6 +10,8 @@ from math import sqrt, atan2, pi, log10, log, sin, cos, radians
 from Scientific.Geometry import Vector
 import numpy as np
 
+#Testing things
+
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
