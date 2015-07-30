@@ -202,7 +202,7 @@ wp = aliased(WormPoint)
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
 r = 10000.
-end_idx = worm_point_coords.shape[0]
+end_idx = worm_pt_coords.shape[0]
 for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
