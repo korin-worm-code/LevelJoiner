@@ -216,7 +216,14 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
-    print eq_pt, wq, dq
+    #print eq_pt, wq, dq
+    
+    for i,idx in enumerate(wq):
+    	sgmt = all_worm_data[idx][1]
+    	print idx, dq[i], sgmt.worm_seg_id, sgmt.worm_level_id
+    
+    
+    
     
     
     
