@@ -228,7 +228,13 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
-    sorted_levels = np.argsort(worm_sgmt_levels[wq])
+    limited_wq = []
+    for i in wq:
+        if i = end_idx:
+            break
+        limited_wq += [i]
+    
+    sorted_levels = np.argsort(worm_sgmt_levels[limited_wq])
     print sorted_levels
 
     
