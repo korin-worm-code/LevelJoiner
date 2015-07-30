@@ -207,6 +207,9 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     eq_pt = [p_lon,p_lat,p._depth_km_]
     
     wq = worm_kd.query_ball_point(eq_pt,r)
+    if len(wq) == 0:
+    	print "No Worms Nearby."
+    	continue
     
     print eq_pt, wq, all_worm_data[wq][1]
     
