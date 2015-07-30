@@ -174,6 +174,10 @@ point_query = session.query(WormPoint,WormLevelPoints).filter(WormPoint.worm_poi
 eq_query = session.query(AppBasinEQs).filter(AppBasinEQs._catalog_ == 'ANF')
 
 
+#Korin's attempts at using KDTree
+earthquakes = spatial.KDTree(eq_query)
+
+
 # temporary data structures for performing our computations
 
 # This is an empty list in Python
@@ -200,6 +204,7 @@ wp = aliased(WormPoint)
 for p in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
+        
     wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
                                             func.ST_SetSRID(WormPoint.wgs84_pt,4326),
                                             km_10_degs)).order_by(WormLevelPoints.worm_level_id,
