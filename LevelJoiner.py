@@ -215,8 +215,8 @@ end_idx = worm_pt_coords.shape[0]
 for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
-    eq_pt = [p_lon,p_lat,p._depth_km_]
-    print eq_pt
+    # depth must be in meters!
+    eq_pt = [p_lon,p_lat,1000.*p._depth_km_]
     
     #wq = worm_kd.query_ball_point(eq_pt,r)
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
@@ -238,7 +238,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     sorted_levels = np.argsort(worm_sgmt_levels[limited_wq])
     limited_wq = np.array(limited_wq)
-    #print p._depth_km_, sorted_levels, worm_sgmt_levels[limited_wq[sorted_levels]]
+    print p._depth_km_, sorted_levels, worm_sgmt_levels[limited_wq[sorted_levels]]
 
     
     #for i,idx in enumerate(wq):
