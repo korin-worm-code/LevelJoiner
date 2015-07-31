@@ -208,8 +208,15 @@ wp = aliased(WormPoint)
 #    .order_by(WormLevelPoints.worm_seg_id,
 #              WormLevelPoints.seg_sequence_num).limit(100):
 #    print p.WormPoint
+
+
 r = 10000.
 end_idx = worm_pt_coords.shape[0]
+
+# Let's build something for some quick stats...
+
+min_dist_to_nodes = []
+
 for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
@@ -220,7 +227,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     if (wq == end_idx).all():
         print "No Worms within %f meters."%r
         continue
-    
+    min_dist_to_nodes += [dq[0]]
     
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
@@ -240,8 +247,6 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     print p._magnitude_, p._depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
     print 'NEW EARTHQUAKE'
-    
-    
     
     
     
