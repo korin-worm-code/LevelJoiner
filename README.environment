@@ -1,0 +1,13 @@
+This code is built to work within a Python virtualenvwrapper setup.
+
+To get that environment setup, you first need to launch bash.
+
+In my ~/.bashrc file, I have the following relevant code snippet:  "source /etc/bash_completion.d/virtualenvwrapper" (without the quotes.
+
+Run that from within bash, then type "workon korin". You should see the string "(korin)" appear at the beginning of your prompt upon success. Next cd to /bonzo_pool/korin_work/, and you should have an environment apprpriate for running the code.
+
+The actual Python packages required will be documented later...
+
+
+
+
