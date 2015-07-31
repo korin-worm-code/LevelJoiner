@@ -218,7 +218,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     if (wq == end_idx).all():
-        print "No Worms Nearby."
+        print "No Worms within %f meters."%r
         continue
     
     
