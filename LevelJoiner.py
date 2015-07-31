@@ -194,20 +194,10 @@ eq_query = session.query(AppBasinEQs,
                          func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_X(),
                          func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_Y() ).filter(AppBasinEQs._catalog_ == 'ANF')
 
-
-# temporary data structures for performing our computations
-
-# This is an empty list in Python
-az_diffs = []
-wsm_azs = []
-wsm_az_sds = []
-seg_rats = []
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
 km_10_degs = kmToDegrees(10.)
 
-# This is just a variable to hold the level from which we are going to do our database query.
-lvl_id = 2
 # sqlalchemy voodoo, these keep aliases of tables for constructing "subqueries" 
 wlp = aliased(WormLevelPoints)
 wp = aliased(WormPoint)
@@ -248,30 +238,7 @@ for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppB
     sorted_levels = np.argsort(worm_rec[limited_wq])
     limited_wq = np.array(limited_wq)
     print p._depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
-    
-    #for i,idx in enumerate(wq):
-    #   if idx == end_idx:
-    #       continue
-    #   sgmt = all_worm_data[idx][1]
-    #   print idx, dq[i], sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
-    
-    
-    
-    
-    
-    
-    #wq = point_query.filter(func.ST_DWithin(p.wkb_geometry,
-    #                                        func.ST_SetSRID(WormPoint.wgs84_pt,4326),
-    #                                        km_10_degs)).order_by(WormLevelPoints.worm_level_id,
-    #                                                              WormLevelPoints.worm_seg_id,
-    #                                                              WormLevelPoints.seg_sequence_num).all()
-    #for i in wq:
-    #   sgmt = i[1]
-    #   end_point = i[0]
-    #   start_point = session.query(WormPoint).filter(WormPoint.worm_point_id == sgmt.start_point_id).one()
-    #   print start_point.x, start_point.y, start_point.z, end_point.x, end_point.y, end_point.z
-        
-        #print end_point.x, end_point.y, end_point.z, end_point.grad, sgmt.azimuth, sgmt.line_grad, sgmt.worm_level_id, sgmt.worm_seg_id, sgmt.seg_sequence_num
+
     print 'NEW EARTHQUAKE'
     
     
