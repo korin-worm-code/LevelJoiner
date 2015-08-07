@@ -193,8 +193,8 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
 eq_query = session.query(ADKMergedEQs,
-                         func.ST_Transform(ADKMergedEQs.wkb_geometry,32618).ST_X(),
-                         func.ST_Transform(ADKMergedEQs.wkb_geometry,32618).ST_Y() ).filter(ADKMergedEQs._catalog_ == 'ANF')
+                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
+                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_Y() )
 
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
@@ -219,11 +219,11 @@ end_idx = worm_pt_coords.shape[0]
 
 min_dist_to_nodes = []
 
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._depth_km_ != 0.).order_by(ADKMergedEQs._magnitude_):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._depth_km_]
+    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
     dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     if (wq == end_idx).all():
@@ -246,7 +246,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._depth_km_ != 0.).order_by(ADK
     # But they are still valid for the individual arrays.
     sorted_levels = np.argsort(worm_rec[limited_wq])
     limited_wq = np.array(limited_wq)
-    print p._magnitude_, p._depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
+    print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
     print 'NEW EARTHQUAKE'
     
