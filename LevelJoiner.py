@@ -16,10 +16,11 @@ import numpy as np
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
-basename = 'AppBasinMergedBGA2500'
+basename = 'ADKMergedBGA2500_to_max_grad'
 layer_name = basename
 points_name = basename + '_points'
-levels_name = basename + '_levels'
+#levels_name = basename + '_levels'
+levels_name = 'ADKMergedBGA2500' + '_levels'
 levels_points_name = basename + '_levels_points'
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
@@ -123,8 +124,8 @@ meta = MetaData()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
-class AppBasinEQs(Base):
-    __table__ = Table('clipped_app_basin_merged_eqs', meta, autoload=True, autoload_with=engine)
+class ADKMergedEQs(Base):
+    __table__ = Table('adk_merged_eqs', meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
