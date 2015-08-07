@@ -191,9 +191,9 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
 
-eq_query = session.query(AppBasinEQs,
-                         func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_X(),
-                         func.ST_Transform(AppBasinEQs.wkb_geometry,32618).ST_Y() ).filter(AppBasinEQs._catalog_ == 'ANF')
+eq_query = session.query(ADKMergedEQs,
+                         func.ST_Transform(ADKMergedEQs.wkb_geometry,32618).ST_X(),
+                         func.ST_Transform(ADKMergedEQs.wkb_geometry,32618).ST_Y() ).filter(ADKMergedEQs._catalog_ == 'ANF')
 
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
@@ -218,7 +218,7 @@ end_idx = worm_pt_coords.shape[0]
 
 min_dist_to_nodes = []
 
-for p,p_lon,p_lat in eq_query.filter(AppBasinEQs._depth_km_ != 0.).order_by(AppBasinEQs._magnitude_):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._depth_km_ != 0.).order_by(ADKMergedEQs._magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
