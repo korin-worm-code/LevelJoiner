@@ -17,7 +17,8 @@ import numpy as np
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
 basename = 'ADKMergedBGA2500_to_max_grad'
-layer_name = basename
+#layer_name = basename
+layer_name = 'ADKMergedBGA2500'
 points_name = basename + '_points'
 #levels_name = basename + '_levels'
 levels_name = 'ADKMergedBGA2500' + '_levels'
