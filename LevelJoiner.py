@@ -191,7 +191,7 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
-worm_kd = spatial.KDTree(worm_pt_coords,leafsize=30)
+worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
 
 eq_query = session.query(ADKMergedEQs,
                          func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
@@ -255,7 +255,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0., ADKMergedEQs
     limited_wq = np.array(limited_wq)
     #print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
-    print 'NEW EARTHQUAKE'
+    #print 'NEW EARTHQUAKE'
     
 
 session.commit()
