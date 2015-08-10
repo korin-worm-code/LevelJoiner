@@ -127,7 +127,7 @@ meta = MetaData()
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
 class ADKMergedEQs(Base):
-    __table__ = Table('adk_merged_eqs', meta, autoload=True, autoload_with=engine)
+    __table__ = Table('adk_merged_eqs_far_from_worms', meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -219,6 +219,7 @@ end_idx = worm_pt_coords.shape[0]
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
+#far_eq = []
 
 for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0., ADKMergedEQs._Depth_km_ <= 7.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
@@ -231,6 +232,11 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0., ADKMergedEQs
         print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0]]
+    
+    p.distance_from_worm = dq[0]
+    
+    #if (dq[0] >= 5500.):
+    #    far_eq += p,p_lon,p_lat
     
     # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
     # The rows of which are the things being indexed, while the first column is a WormPoint
@@ -251,8 +257,8 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0., ADKMergedEQs
 
     print 'NEW EARTHQUAKE'
     
-    
-    
+
+session.commit()
 
 
 
