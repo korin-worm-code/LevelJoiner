@@ -220,7 +220,7 @@ end_idx = worm_pt_coords.shape[0]
 
 min_dist_to_nodes = []
 
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0.).order_by(ADKMergedEQs._Magnitude_):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0., ADKMergedEQs._Depth_km_ <= 7.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
@@ -247,7 +247,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ != 0.).order_by(ADK
     # But they are still valid for the individual arrays.
     sorted_levels = np.argsort(worm_rec[limited_wq])
     limited_wq = np.array(limited_wq)
-    print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
+    #print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
     print 'NEW EARTHQUAKE'
     
