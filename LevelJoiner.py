@@ -16,13 +16,13 @@ import numpy as np
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
-#basename = 'ADKMergedBGA2500_to_max_grad'
-basename = 'ADKMergedBGA2500'
-layer_name = basename
-#layer_name = 'ADKMergedBGA2500'
+basename = 'ADKMergedBGA2500_to_max_grad'
+#basename = 'ADKMergedBGA2500'
+#layer_name = basename
+layer_name = 'ADKMergedBGA2500'
 points_name = basename + '_points'
-levels_name = basename + '_levels'
-#levels_name = 'ADKMergedBGA2500' + '_levels'
+#levels_name = basename + '_levels'
+levels_name = 'ADKMergedBGA2500' + '_levels'
 levels_points_name = basename + '_levels_points'
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
