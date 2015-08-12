@@ -233,7 +233,7 @@ for p in euler_query:
     
     dq,wq = worm_kd.query(euler_pt,k=20,distance_upper_bound=r)
     if (wq == end_idx).all():
-        print "No Worms within %f meters."%r
+    #    print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0]]
     
