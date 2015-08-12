@@ -223,7 +223,7 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
-for p in euler_query:
+for p in euler_query.filter(ADKBGAEuler.depth <= 7000.):
 	# We are no longer working with earthquakes, so we don't need to sort them by magnitude
 	#.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
