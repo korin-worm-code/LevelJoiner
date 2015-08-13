@@ -193,6 +193,7 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
 #worm_kd = spatial.cKDTree(worm_pt_coords,leafsize=1000)
+# Trying the new scikit-learn implementation of 
 worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 eq_query = session.query(ADKMergedEQs,
@@ -232,7 +233,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
     # Old scipy.spatial implementation of the query
     # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     # New scikit_learn.neighbors implementation of the query
-    dq,wq = worm_kd.query_radius(eq_pt,,r=r, return_distance = True, sort_resutls=True)
+    dq,wq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
     if (wq == end_idx).all():
         print "No Worms within %f meters."%r
         continue
