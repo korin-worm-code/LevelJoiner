@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 from math import sqrt, atan2, pi, log10, log, sin, cos, radians
 from Scientific.Geometry import Vector
 from scipy import spatial
+from sklearn import neighbors
 import numpy as np
 
 #Testing things
@@ -191,7 +192,8 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
-worm_kd = spatial.KDTree(worm_pt_coords,leafsize=200)
+#worm_kd = spatial.cKDTree(worm_pt_coords,leafsize=1000)
+worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 eq_query = session.query(ADKMergedEQs,
                          func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
@@ -227,7 +229,10 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
-    dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
+    # Old scipy.spatial implementation of the query
+    # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
+    # New scikit_learn.neighbors implementation of the query
+    dq,wq = worm_kd.query_radius(eq_pt,,r=r, return_distance = True, sort_resutls=True)
     if (wq == end_idx).all():
         print "No Worms within %f meters."%r
         continue
