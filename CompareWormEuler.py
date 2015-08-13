@@ -229,7 +229,7 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
-    euler_pt = [p.xeuler,p.yeuler,p.depth]
+    euler_pt = [p.XEuler,p.YEuler,p.depth]
     
     dq,wq = worm_kd.query(euler_pt,k=20,distance_upper_bound=r)
     if (wq == end_idx).all():
