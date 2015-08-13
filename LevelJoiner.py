@@ -233,8 +233,10 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
     # Old scipy.spatial implementation of the query
     # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     # New scikit_learn.neighbors implementation of the query
-    dq,wq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
-    if (wq == end_idx).all():
+    wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    # Need to modifiy this test for the new return style.
+    #if (wq == end_idx).all():
+    if wq[0].shape[0] == 0:
         print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0]]
