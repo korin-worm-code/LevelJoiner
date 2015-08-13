@@ -191,7 +191,7 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
-worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
+worm_kd = spatial.KDTree(worm_pt_coords,leafsize=200)
 
 eq_query = session.query(ADKMergedEQs,
                          func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
