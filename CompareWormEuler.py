@@ -16,13 +16,13 @@ import numpy as np
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
-basename = 'ADKMergedBGA2500_to_max_grad'
+basename = 'ADK_PSG_UTM_1250_to_max_grad'
 #basename = 'ADKMergedBGA2500'
 #layer_name = basename
-layer_name = 'ADKMergedBGA2500'
+layer_name = 'ADK_PSG_UTM_1250'
 points_name = basename + '_points'
 #levels_name = basename + '_levels'
-levels_name = 'ADKMergedBGA2500' + '_levels'
+levels_name = 'ADK_PSG_UTM_1250' + '_levels'
 levels_points_name = basename + '_levels_points'
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
@@ -126,8 +126,8 @@ meta = MetaData()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters (not valid anymore)
-class ADKBGAEuler(Base):
-    __table__ = Table('ADK_BGA_Euler_Solutions', meta, autoload=True, autoload_with=engine)
+class ADKPSGEuler(Base):
+    __table__ = Table('ADK_PSG_Euler_Solutions', meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -193,7 +193,7 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
 
-euler_query = session.query(ADKBGAEuler)
+euler_query = session.query(ADKPSGEuler)
 # We already converted to UTM when building the database,
 # so we shouldn't need to do the conversion again.
 #                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
@@ -223,7 +223,7 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
-for p in euler_query.filter(ADKBGAEuler.depth <= 7000.):
+for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
 	# We are no longer working with earthquakes, so we don't need to sort them by magnitude
 	#.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
