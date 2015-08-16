@@ -251,16 +251,16 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
-    limited_wq = []
-    for i in wq:
-        if i == end_idx:
-            break
-        limited_wq += [i]
-        
-    # The indices returned here reflect the auxiliary sorting from the numpy record array
-    # But they are still valid for the individual arrays.
-    sorted_levels = np.argsort(worm_rec[limited_wq])
-    limited_wq = np.array(limited_wq)
+#     limited_wq = []
+#     for i in wq:
+#         if i == end_idx:
+#             break
+#         limited_wq += [i]
+#         
+#     # The indices returned here reflect the auxiliary sorting from the numpy record array
+#     # But they are still valid for the individual arrays.
+#     sorted_levels = np.argsort(worm_rec[limited_wq])
+#     limited_wq = np.array(limited_wq)
     #print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
     #print 'NEW EARTHQUAKE'
@@ -268,35 +268,6 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
 
 session.commit()
 
-
-
-
-
-"""
-    ## First off find all World Stress Map control points within 1500 kms
-    #wsmq = wsm08_query.filter(func.ST_DWithin(Wsm2008.position,
-    #                                          func.ST_SetSRID(central.wgs84_pt,4326),
-    #                                          km_1000_degs))
-    #wsm_nearby = wsmq.all()
-    #if len(wsm_nearby) < 5:
-    #    continue
-    
-    # call into the bloody database to dig the lons and lats out of central
-    # N.B. we do NOT need to have a valid SRID here, which is a good thing
-    # since geoalchemy2 seems to have trouble getting SRIDs from the db.
-    #central_lon,central_lat = session.query(func.ST_X(central.wgs84_pt),
-    #                                        func.ST_Y(central.wgs84_pt)).one()
-    # compute the distances between central and the wsm points
-    dists = np.array([gc_dist(w.LAT,w.LON,central_lat,central_lon) for w in wsm_nearby],np.float32)
-    #sorted_dist_idxs = np.argsort(dists)
-    # Find the subset of indices with distance less than 500 km
-    limited_range_idxs = np.argwhere(dists<=100.).transpose()[0]
-    #print limited_range_idxs
-    
-    #print dists[sorted_dist_idxs]
-    #azs = [w.AZI for w in wsm_nearby]
-    #print azs
-"""  
     
 
        
