@@ -250,6 +250,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
     connection.execute(adk_eq_table.update().\
                         where(id==p.id).\
                         values(distance_from_worm=dq[0][0]))
+    print p.id
     
     #p.distance_from_worm = dq[0][0]
     
