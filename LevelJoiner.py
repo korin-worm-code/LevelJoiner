@@ -11,6 +11,7 @@ from Scientific.Geometry import Vector
 from scipy import spatial
 from sklearn import neighbors
 import numpy as np
+from sys.stdout import flush
 
 #Testing things
 
@@ -251,6 +252,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
                         where(id==p.id).\
                         values(distance_from_worm=dq[0][0]))
     print p.id, dq[0][0]
+    flush()
     
     #p.distance_from_worm = dq[0][0]
     
