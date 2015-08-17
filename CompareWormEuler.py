@@ -11,6 +11,7 @@ from Scientific.Geometry import Vector
 from scipy import spatial
 from sklearn import neighbors
 import numpy as np
+import sys
 
 #Testing things
 
@@ -226,13 +227,13 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
-connection = session.connection()
+#connection = session.connection()
 
-adk_euler_table = inspect(ADKPSGEuler).mapped_table
+#adk_euler_table = inspect(ADKPSGEuler).mapped_table
 
-r1 = connection.execute(adk_euler_table.select())
+#r1 = connection.execute(adk_euler_table.select())
 
-for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
+for p in euler_query.filter(ADKPSGEuler.depth <= 7500.):
 	# We are no longer working with earthquakes, so we don't need to sort them by magnitude
 	#.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
@@ -251,9 +252,11 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
     #min_dist_to_nodes += [dq[0]]
     min_dist_to_nodes += [dq[0][0]]
     
-    connection.execute(adk_euler_table.update().\
-                        where(id==p.id).\
-                        values(distance_from_worm=dq[0][0]))
+#    connection.execute(adk_euler_table.update().\
+#                        where(id==p.id).\
+#                        values(distance_from_worm=dq[0][0]))
+    print p.id, dq[0][0]
+    sys.stdout.flush()
     
     #p.distance_from_worm = dq[0]
     #p.distance_from_worm = dq[0][0]
@@ -281,7 +284,7 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
     #print 'NEW EARTHQUAKE'
     
 
-session.commit()
+#session.commit()
 
 
 
