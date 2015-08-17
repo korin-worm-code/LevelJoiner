@@ -275,6 +275,9 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
 
     #print 'NEW EARTHQUAKE'
     
+print "Deleting KD tree..."
+del worm_kd
+print "KD tree deleted!"
 
 session.commit()
 
