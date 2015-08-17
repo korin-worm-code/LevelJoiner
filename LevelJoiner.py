@@ -232,7 +232,8 @@ min_dist_to_nodes = []
 
 #r1 = connection.execute(adk_eq_table.select())
 
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
+#for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
