@@ -193,9 +193,9 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
-worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
+#worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
 # Updating to be runable with mag data
-#worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
+worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 euler_query = session.query(ADKPSGEuler)
 # We already converted to UTM when building the database,
