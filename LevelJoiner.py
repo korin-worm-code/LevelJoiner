@@ -112,6 +112,7 @@ engine = create_engine('%s'%db, echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
+
 if not engine.dialect.has_table(connect, layer_name):
     raise AttributeError('The Layer table is missing.')
 if not engine.dialect.has_table(connect, points_name):
@@ -224,6 +225,12 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
+connection = session.connection()
+
+adk_eq_table = inspect(ADKMergedEQs).mapped_table
+
+r1 = connection.execute(adk_eq_table.select())
+
 for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
@@ -240,8 +247,11 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
         print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0][0]]
+    connection.execute(adk_eq_table.update().\
+                        where(id==p.id).\
+                        values(distance_from_worm=dq[0][0]))
     
-    p.distance_from_worm = dq[0][0]
+    #p.distance_from_worm = dq[0][0]
     
     #if (dq[0] >= 5500.):
     #    far_eq += p,p_lon,p_lat
