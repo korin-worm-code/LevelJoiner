@@ -255,7 +255,7 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7500.):
 #    connection.execute(adk_euler_table.update().\
 #                        where(id==p.id).\
 #                        values(distance_from_worm=dq[0][0]))
-    print p.id, dq[0][0]
+#    print p.id, dq[0][0]
     sys.stdout.flush()
     
     #p.distance_from_worm = dq[0]
