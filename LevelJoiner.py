@@ -11,6 +11,7 @@ from Scientific.Geometry import Vector
 from scipy import spatial
 from sklearn import neighbors
 import numpy as np
+import sys
 
 #Testing things
 
@@ -225,13 +226,14 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
-connection = session.connection()
+#connection = session.connection()
 
-adk_eq_table = inspect(ADKMergedEQs).mapped_table
+#adk_eq_table = inspect(ADKMergedEQs).mapped_table
 
-r1 = connection.execute(adk_eq_table.select())
+#r1 = connection.execute(adk_eq_table.select())
 
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
+#for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
@@ -247,9 +249,11 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
         print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0][0]]
-    connection.execute(adk_eq_table.update().\
-                        where(id==p.id).\
-                        values(distance_from_worm=dq[0][0]))
+#    connection.execute(adk_eq_table.update().\
+#                        where(id==p.id).\
+#                        values(distance_from_worm=dq[0][0]))
+    print p.id, dq[0][0]
+    sys.stdout.flush()
     
     #p.distance_from_worm = dq[0][0]
     
@@ -275,8 +279,11 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADK
 
     #print 'NEW EARTHQUAKE'
     
+#print "Deleting KD tree..."
+#del worm_kd
+#print "KD tree deleted!"
 
-session.commit()
+#session.commit()
 
     
 
