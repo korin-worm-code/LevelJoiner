@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 from math import sqrt, atan2, pi, log10, log, sin, cos, radians
 from Scientific.Geometry import Vector
 from scipy import spatial
+from sklearn import neighbors
 import numpy as np
 
 #Testing things
@@ -192,6 +193,8 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 
 # Creating SciPy KDTree to speed up earthquake-worm point comparison
 worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
+# Updating to be runable with mag data
+#worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 euler_query = session.query(ADKPSGEuler)
 # We already converted to UTM when building the database,
@@ -223,6 +226,12 @@ end_idx = worm_pt_coords.shape[0]
 min_dist_to_nodes = []
 #far_eq = []
 
+connection = session.connection()
+
+adk_euler_table = inspect(ADKPSGEuler).mapped_table
+
+r1 = connection.execute(adk_euler_table.select())
+
 for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
 	# We are no longer working with earthquakes, so we don't need to sort them by magnitude
 	#.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
@@ -231,13 +240,23 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
     # depth must be in meters!
     euler_pt = [p.XEuler,p.YEuler,p.depth]
     
-    dq,wq = worm_kd.query(euler_pt,k=20,distance_upper_bound=r)
-    if (wq == end_idx).all():
-    #    print "No Worms within %f meters."%r
+    # SciPy KDTrees
+    #dq,wq = worm_kd.query(euler_pt,k=20,distance_upper_bound=r)
+    wq,dq = worm_kd.query_radius(euler_pt,r=r,return_distance = True,sort_results=True)
+    #if (wq == end_idx).all():
+    # New return style
+    if wq[0].shape[0] == 0:
+        print "No Worms within %f meters."%r
         continue
-    min_dist_to_nodes += [dq[0]]
+    #min_dist_to_nodes += [dq[0]]
+    min_dist_to_nodes += [dq[0][0]]
     
-    p.distance_from_worm = dq[0]
+    connection.execute(adk_euler_table.update().\
+                        where(id==p.id).\
+                        values(distance_from_worm=dq[0][0]))
+    
+    #p.distance_from_worm = dq[0]
+    #p.distance_from_worm = dq[0][0]
     
     #if (dq[0] >= 5500.):
     #    far_eq += p,p_lon,p_lat
@@ -247,16 +266,16 @@ for p in euler_query.filter(ADKPSGEuler.depth <= 7000.):
     # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
     #print eq_pt, wq, dq
     
-    limited_wq = []
-    for i in wq:
-        if i == end_idx:
-            break
-        limited_wq += [i]
-        
-    # The indices returned here reflect the auxiliary sorting from the numpy record array
-    # But they are still valid for the individual arrays.
-    sorted_levels = np.argsort(worm_rec[limited_wq])
-    limited_wq = np.array(limited_wq)
+#    limited_wq = []
+#    for i in wq:
+#        if i == end_idx:
+#            break
+#        limited_wq += [i]
+#        
+#    # The indices returned here reflect the auxiliary sorting from the numpy record array
+#    # But they are still valid for the individual arrays.
+#    sorted_levels = np.argsort(worm_rec[limited_wq])
+#    limited_wq = np.array(limited_wq)
     #print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
 
     #print 'NEW EARTHQUAKE'
