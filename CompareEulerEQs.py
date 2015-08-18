@@ -16,6 +16,9 @@ import sys
 #Testing things
 
 
+# sqlalchemy vodoo
+Base = declarative_base()
+
 # Hooking things up to the database system
 db = 'postgresql://frank:f00bar@localhost:5433/frank'
 engine = create_engine('%s'%db, echo=False)
