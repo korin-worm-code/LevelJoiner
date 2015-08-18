@@ -241,7 +241,7 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     
     # Displays earthquakes outside the range
     if wq[0].shape[0] == 0:
-        print "No Worms within %f meters."%r
+#        print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0][0]]
     
