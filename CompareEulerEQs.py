@@ -130,7 +130,7 @@ meta = MetaData()
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
 class ADKBGAEuler(Base):
-	__table__ = Table('ADK_BGA_Euler_Solution', meta, autoload=True, autoload_with=engine)
+	__table__ = Table('ADK_BGA_Euler_Solutions', meta, autoload=True, autoload_with=engine)
 
 class ADKMergedEQs(Base):
     __table__ = Table('adk_merged_eqs_far_from_worms', meta, autoload=True, autoload_with=engine)
