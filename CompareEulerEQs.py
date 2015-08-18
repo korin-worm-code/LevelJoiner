@@ -129,8 +129,8 @@ meta = MetaData()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
-class ADKPSGEuler(Base):
-	__table__ = Table('ADK_PSG_Euler_Solution', meta, autoload=True, autoload_with=engine)
+class ADKBGAEuler(Base):
+	__table__ = Table('ADK_BGA_Euler_Solution', meta, autoload=True, autoload_with=engine)
 
 class ADKMergedEQs(Base):
     __table__ = Table('adk_merged_eqs_far_from_worms', meta, autoload=True, autoload_with=engine)
@@ -201,7 +201,7 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 # Trying the new scikit-learn implementation of 
 euler_query = session.query(ADKBGAEuler).filter(ADKBGAEuler.depth <= 7500.)
 
-euler_pt_coords = np.array([[e.XEuler,e.YEuler,e.depth] for e in euler_query])
+euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
 
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
