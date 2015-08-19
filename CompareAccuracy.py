@@ -265,7 +265,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     
     min_dist_to_nodes_eulers += [de[0][0]]
     
-    min_dist_to_nodes += [[p.id,min_dist_to_nodes_worms,min_dist_to_nodes_eulers]]
+    min_dist_to_nodes += [[p.id,dw[0][0],de[0][0]]]
     
     
     
@@ -277,7 +277,6 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     # than distance_from_euler or vice-versa
     #p.distance_from_worm = dq[0][0]
 
-accuracy_comparison = np.array(min_dist_to_nodes)
 
 #session.commit()
 print "Done"
