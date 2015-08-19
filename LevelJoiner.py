@@ -13,7 +13,7 @@ from sklearn import neighbors
 import numpy as np
 import sys
 
-import WormDBStuff
+from WormDBStuff import WormPointBase,WormLevelBase,WormLevelPointsBase
 
 #Testing things
 
@@ -51,7 +51,7 @@ class WormLevel(Base,WormLevelBase):
     __tablename__ = levels_name
     point = relationship('WormPoint', secondary=levels_points_name)
     
-class WormLevelPoints(Base,WormLEvelPointsBase):
+class WormLevelPoints(Base,WormLevelPointsBase):
     __tablename__ = levels_points_name
     # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
     # This is the level_id in the external table
