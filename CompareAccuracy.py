@@ -27,7 +27,7 @@ points_name = basename + '_points'
 levels_name = 'ADKMergedBGA2500' + '_levels'
 levels_points_name = basename + '_levels_points'
 
-earthquakes = 'adk_merged_eqs'
+earthquakes = 'adk_merged_eqs_distance_from_worms_and_eulers'
 
 euler_points = 'ADK_BGA_Euler_Solutions'
 
@@ -237,8 +237,7 @@ r = 10000.
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
-min_dist_to_nodes_worms = []
-min_dist_to_nodes_eulers = []
+
 
 for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     
@@ -261,9 +260,6 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
         print "No Euler points within %f meters."%r
         continue
     
-    min_dist_to_nodes_worms += [dw[0][0]]
-    
-    min_dist_to_nodes_eulers += [de[0][0]]
     
     min_dist_to_nodes += [[p.id,dw[0][0],de[0][0]]]
     
@@ -275,10 +271,11 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
 	
     # Option 1: write a new column to the database, and then use a GIS tool to compare locations where distance_from_worm is greater
     # than distance_from_euler or vice-versa
-    #p.distance_from_worm = dq[0][0]
+    p.distance_from_worms = dw[0][0]
+    p.distance_from_eulers = de[0][0]
 
 
-#session.commit()
+session.commit()
 print "Done"
     
 
