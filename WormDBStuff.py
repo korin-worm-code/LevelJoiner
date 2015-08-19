@@ -1,5 +1,11 @@
 from sqlalchemy import Column, Integer, Float, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, Float, ForeignKey
+from geoalchemy2 import Geometry
+from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 
 from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 
@@ -79,6 +85,7 @@ class WormLevelPointsBase(object):
     # This is a duplicate of line_segmt but explicitly stored in wgs84.
     wgs84_line_segmt = Column(Geometry('LINESTRING'),index=True)
 
+Base = declarative_base()
 
 
 def WormDBStufFactory(basename):
@@ -93,5 +100,33 @@ def WormDBStufFactory(basename):
 	levels_name = basename + '_levels'
 	levels_points_name = basename + '_levels_points'
 	
-	class 
+	class WormLevel(Base,WormLevelBase):
+    	__tablename__ = levels_name
+    	point = relationship('WormPoint', secondary=levels_points_name)
+    	
+	class WormPoint(Base,WormPointBase):
+	    __tablename__ = points_name
+	    level = relationship('WormLevel', secondary=levels_points_name)
+	    
+	class WormLevelPoints(Base,WormLevelPointsBase):
+	    __tablename__ = levels_points_name
+	    # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
+	    # This is the level_id in the external table
+	    worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
+	    # This is the point id of the END point of a line segment.
+	    point_id = Column(Integer, ForeignKey(points_name + '.worm_point_id'), primary_key=True)
+	    # In addition to participating in a composite primary key, this field is 
+	    # a unique-within-a-level index for worm segments. 
+	    #worm_seg_id = Column(Integer,primary_key=True,index=True)
+	    # Database magic that links entries in this table with entries in another table
+	    worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
+	    # Database magic that links entries in this table with entries in another table
+	    worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
+	    
+	return WormPoint, WormLevelPoints, WormLevel
+	
+ 
+ 
+
+
 
