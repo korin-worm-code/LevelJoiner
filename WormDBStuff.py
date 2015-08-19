@@ -89,7 +89,7 @@ Base = declarative_base()
 
 
 def WormDBStuffFactory(basename):
-	""" A Factory Class for creating sqlalchemy ORM classes.
+	""" A Factory function for creating sqlalchemy ORM classes.
 	
 		Design goal: an external thingy that has something like the following signature:
 		WormPoint,WormLevelPoints,WormLevel = WormDBStuffFactory(basename)
