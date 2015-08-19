@@ -1,42 +1,29 @@
-from sqlalchemy import create_engine, func, inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.schema import Table,MetaData
 from sqlalchemy import Column, Integer, Float, ForeignKey
 from geoalchemy2 import Geometry
-from geoalchemy2.functions import GenericFunction
-from geoalchemy2.elements import WKTElement, WKBElement
-from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 
+from sqlalchemy.orm import sessionmaker, relationship, backref, aliased
 
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
 
+# We are building classes here that are to be "mixed in" with ORM declarative_base classes.
+# The google group message that suggested this design is found at:
+# <https://groups.google.com/d/msg/sqlalchemy/kjBpgm3CBSE/_6hS95YTKQAJ>
+#
+# These classes are responsible for declaring the DB columns "once and only once".
+# The classes that use these as mixins elsewhere are responsible for dealing with the
+# database specific infrastructure, including naming the tables.
 
-basename = 'ADK_PSG_UTM_1250_to_max_grad'
-#basename = 'ADKMergedBGA2500'
-#layer_name = basename
-layer_name = 'ADK_PSG_UTM_1250'
-points_name = basename + '_points'
-#levels_name = basename + '_levels'
-levels_name = 'ADK_PSG_UTM_1250' + '_levels'
-levels_points_name = basename + '_levels_points'
 
-# This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
-class ST_Collect(GenericFunction):
-    name = 'ST_Collect'
-    type = Geometry
-# sqlalchemy vodoo
-Base = declarative_base()
-
-# This is a class from the "declarative base" 'Object Relational Mapper' (ORM) of sqlalchemy
+# This is a class to be "mixed in" with  the "declarative base" 'Object Relational Mapper' 
+# (ORM) of sqlalchemy
 # It's job is to map between the database table and Python objects
-# The structure essentially mimics an alread existing table, or declares a new table
+# The structure essentially mimics an already existing table, or declares a new table
 # if we create it here in this code. 
 # In this instance, it already exists.
 #FIXME Change name to WormPoints, and correct in rest of script. Or maybe think about naming in general...
-class WormPoint(Base):
-    __tablename__ = points_name
+class WormPointBase(object):
     # Primary Key. Boring.
     worm_point_id = Column(Integer, primary_key=True, index=True)
     # An id from the worming code. I don't remember if it was unique, so I didn't use it as a PK.
@@ -51,35 +38,31 @@ class WormPoint(Base):
     height = Column(Float)
     # A PostGIS point geometry, in the native CRS
     pt = Column(Geometry('POINT'),index=True)
-    # Database magic that links entries in this table with entries in another table
-    level = relationship('WormLevel', secondary=levels_points_name)
     # A duplicate of pt in WGS84 coordinates; converted by PostGIS at write-time
     wgs84_pt = Column(Geometry('POINT'),index=True)
 
     
-class WormLevel(Base):
-    __tablename__ = levels_name
+class WormLevelBase(object):
     # A PK, there are only ~10 entries in this table, so it's tiny, so no index.
     worm_level_id = Column(Integer, primary_key=True)
     # The actual level (prob in meters, but potentially varies...)
     level = Column(Float)
     # Database magic that links entries in this table with entries in another table
-    point = relationship('WormPoint', secondary=levels_points_name)
     
-class WormLevelPoints(Base):
-    __tablename__ = levels_points_name
+class WormLevelPointsBase(object):
+    # __tablename__ = levels_points_name
     # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
     # This is the level_id in the external table
-    worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
+    #worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
     # This is the point id of the END point of a line segment.
-    point_id = Column(Integer, ForeignKey(points_name + '.worm_point_id'), primary_key=True)
+    #point_id = Column(Integer, ForeignKey(points_name + '.worm_point_id'), primary_key=True)
     # In addition to participating in a composite primary key, this field is 
     # a unique-within-a-level index for worm segments. 
     worm_seg_id = Column(Integer,primary_key=True,index=True)
     # Database magic that links entries in this table with entries in another table
-    worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
+    #worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
     # Database magic that links entries in this table with entries in another table
-    worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
+    #worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
     # This is an index number internal to each worm segment, numbering the edges
     # FIXME (maybe) This terminology needs to be cleaned up.
     seg_sequence_num = Column(Integer)
@@ -99,21 +82,4 @@ class WormLevelPoints(Base):
 
 
 
-# Hooking things up to the database system
-db = 'postgresql://frank:f00bar@localhost:5433/frank'
-engine = create_engine('%s'%db, echo=False)
-Session = sessionmaker(bind=engine)
-session = Session()
-connect = engine.connect()
-
-if not engine.dialect.has_table(connect, layer_name):
-    raise AttributeError('The Layer table is missing.')
-if not engine.dialect.has_table(connect, points_name):
-    raise AttributeError('The Points table is missing.')
-if not engine.dialect.has_table(connect, levels_name):
-    raise AttributeError('The Levels table is missing.')
-if not engine.dialect.has_table(connect, levels_points_name):
-    raise AttributeError('The Levels_Points table is missing.')
-    
-meta = MetaData()
 
