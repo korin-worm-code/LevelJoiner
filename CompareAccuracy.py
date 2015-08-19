@@ -271,8 +271,8 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
 	
     # Option 1: write a new column to the database, and then use a GIS tool to compare locations where distance_from_worm is greater
     # than distance_from_euler or vice-versa
-    p.distance_from_worms = dw[0][0]
-    p.distance_from_eulers = de[0][0]
+    p.distance_to_worms = dw[0][0]
+    p.distance_to_eulers = de[0][0]
 
 
 session.commit()
