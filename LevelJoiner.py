@@ -19,8 +19,9 @@ from WormDBStuff import WormDBStuffFactory
 # This is the base of all PostGIS table names for this project
 basename = 'ADKMergedBGA2500'
 
-WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
+earthquakes = 'adk_merged_eqs'
 
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
 class ST_Collect(GenericFunction):
@@ -51,33 +52,9 @@ Base = declarative_base()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
-class ADKMergedEQs(Base):
-    __table__ = Table('adk_merged_eqs_far_from_worms', meta, autoload=True, autoload_with=engine)
+class EQs(Base):
+    __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
-# A function that converts latitude and longitudes (in degrees)
-# for 2 different points into Great Circle distances in kilometers.
-def gc_dist(lat1,lon1,lat2,lon2):
-    # cribbed from <http://code.activestate.com/recipes/
-    # 576779-calculating-distance-between-two-geographic-points/>
-    # Radius of a sphere with the equivalent volume to the Earth
-    R = 6371.0
-    lat1 = radians(lat1)
-    lon1 = radians(lon1)
-    lat2 = radians(lat2)
-    lon2 = radians(lon2)
-    
-    dlon = (lon2 - lon1)
-    dlat = (lat2 - lat1)
-    a = (sin(dlat/2.))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2.))**2
-    c = 2. * atan2(sqrt(a), sqrt(1.-a))
-    return R * c
-
-
-
-# Utility function: how many degrees away is something km apart on the surface of the Earth
-def kmToDegrees(km):
-    # 6371 is again the radius of the Earth
-    return 360. * km / (6371.*2.*pi)
 
 
 # This is an example of the sqlalchemy way to encapsulate a SQL query.
@@ -115,100 +92,48 @@ worm_rec = np.rec.fromarrays([worm_sgmt_levels, worm_sgmt_ids, worm_sgmt_seq_num
 all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_level_points',WormLevelPoints)])
 
 
-# Creating SciPy KDTree to speed up earthquake-worm point comparison
-#worm_kd = spatial.cKDTree(worm_pt_coords,leafsize=1000)
 # Trying the new scikit-learn implementation of 
 worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
-eq_query = session.query(ADKMergedEQs,
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_Y() )
-
-# This is a "north unit vector" 
-North = Vector(x=1., y=0., z=0.)
-km_10_degs = kmToDegrees(10.)
-
-# sqlalchemy voodoo, these keep aliases of tables for constructing "subqueries" 
-wlp = aliased(WormLevelPoints)
-wp = aliased(WormPoint)
-
-# THE MAIN OUTER LOOP
-# We are looping over everyything in point_query, with extra restrictions, ordering, and limits...
-#for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\
-#    .order_by(WormLevelPoints.worm_seg_id,
-#              WormLevelPoints.seg_sequence_num).limit(100):
-#    print p.WormPoint
+eq_query = session.query(EQs,
+                         func.ST_Transform(EQs.geom,32618).ST_X(),
+                         func.ST_Transform(EQs.geom,32618).ST_Y() )
 
 
 r = 10000.
-end_idx = worm_pt_coords.shape[0]
+
 
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
-#far_eq = []
 
-#connection = session.connection()
 
-#adk_eq_table = inspect(ADKMergedEQs).mapped_table
-
-#r1 = connection.execute(adk_eq_table.select())
-
-#for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
-    #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
+#for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
+for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
-    # Old scipy.spatial implementation of the query
-    # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
     # New scikit_learn.neighbors implementation of the query
     wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
-    # Need to modifiy this test for the new return style.
-    #if (wq == end_idx).all():
+    
     if wq[0].shape[0] == 0:
-        print "No Worms within %f meters."%r
+    #    print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0][0]]
-#    connection.execute(adk_eq_table.update().\
-#                        where(id==p.id).\
-#                        values(distance_from_worm=dq[0][0]))
-    print p.id, dq[0][0]
+    
+    
+    #print p.id, dq[0][0]
     sys.stdout.flush()
     
     #p.distance_from_worm = dq[0][0]
     
-    #if (dq[0] >= 5500.):
-    #    far_eq += p,p_lon,p_lat
-    
-    # N.B. if we index into all_worm_data with wq, we get an *ARRAY* of results
-    # The rows of which are the things being indexed, while the first column is a WormPoint
-    # and the second column is a WormLevelPoints. all_worm_data[wq][:,1]
-    #print eq_pt, wq, dq
-    
-#     limited_wq = []
-#     for i in wq:
-#         if i == end_idx:
-#             break
-#         limited_wq += [i]
-#         
-#     # The indices returned here reflect the auxiliary sorting from the numpy record array
-#     # But they are still valid for the individual arrays.
-#     sorted_levels = np.argsort(worm_rec[limited_wq])
-#     limited_wq = np.array(limited_wq)
-    #print p._Magnitude_, p._Depth_km_, dq[sorted_levels], worm_sgmt_levels[limited_wq[sorted_levels]], worm_sgmt_ids[limited_wq[sorted_levels]], worm_sgmt_seq_num[limited_wq[sorted_levels]]
-
     #print 'NEW EARTHQUAKE'
     
-#print "Deleting KD tree..."
-#del worm_kd
-#print "KD tree deleted!"
+print "Done"
 
 #session.commit()
 
-    
 
-       
 
 
