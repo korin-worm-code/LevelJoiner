@@ -18,16 +18,18 @@ import sys
 # This is the base of all PostGIS table names for this project
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
-basename = 'ADK_PSG_UTM_1250_to_max_grad'
+basename = 'ADKMergedBGA2500_to_max_grad'
 #basename = 'ADKMergedBGA2500'
 #layer_name = basename
-layer_name = 'ADK_PSG_UTM_1250'
+layer_name = 'ADKMergedBGA2500'
 points_name = basename + '_points'
 #levels_name = basename + '_levels'
-levels_name = 'ADK_PSG_UTM_1250' + '_levels'
+levels_name = 'ADKMergedBGA2500' + '_levels'
 levels_points_name = basename + '_levels_points'
 
 earthquakes = 'adk_merged_eqs'
+
+euler_points = 'ADK_BGA_Euler_Solutions'
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
 class ST_Collect(GenericFunction):
@@ -129,7 +131,12 @@ meta = MetaData()
 
 
 # This is a black magic function, that hooks up an existing database table, but that still allows
-# for python object access to the database data. 
+# for python object access to the database data.
+
+# We will hook up the Euler solution points
+class Euler(Base):
+	__table__ = Table(euler_points, meta, autoload=True, autoload_with=engine)
+
 # We will hook up the earthquake hypocenters
 class EQs(Base):
     __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
@@ -195,10 +202,19 @@ worm_rec = np.rec.fromarrays([worm_sgmt_levels, worm_sgmt_ids, worm_sgmt_seq_num
 all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_level_points',WormLevelPoints)])
 
 
-# Creating SciPy KDTree to speed up earthquake-worm point comparison
-#worm_kd = spatial.cKDTree(worm_pt_coords,leafsize=1000)
-# Trying the new scikit-learn implementation of 
+# Trying the new scikit-learn implementation of KDTree
 worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
+
+
+# Pulling in euler points
+euler_query = session.query(Euler).filter(Euler.depth <= 7500.)
+
+# Turning euler points into numpy array
+euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
+
+# Creating scikit-learn KDTree to speed up earthquake-euler point comparison
+euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
+
 
 eq_query = session.query(EQs,
                          func.ST_Transform(EQs.geom,32618).ST_X(),
@@ -214,10 +230,6 @@ wp = aliased(WormPoint)
 
 # THE MAIN OUTER LOOP
 # We are looping over everyything in point_query, with extra restrictions, ordering, and limits...
-#for p in point_query.filter(WormLevelPoints.worm_level_id ==lvl_id)\
-#    .order_by(WormLevelPoints.worm_seg_id,
-#              WormLevelPoints.seg_sequence_num).limit(100):
-#    print p.WormPoint
 
 
 r = 10000.
@@ -225,24 +237,37 @@ r = 10000.
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
-
+min_dist_to_nodes_worms = []
+min_dist_to_nodes_eulers = []
 
 for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
-    #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
-    # Old scipy.spatial implementation of the query
-    # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
-    # New scikit_learn.neighbors implementation of the query
-    wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
-    # Need to modifiy this test for the new return style.
-    #if (wq == end_idx).all():
-    if wq[0].shape[0] == 0:
+    # New scikit_learn.neighbors implementation of the query for worms
+    ww,dw = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+	
+	# New scikit_learn.neighbors implementation of the query for euler
+    we,de = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+	
+	# Displays earthquakes outside the range of worms
+    if ww[0].shape[0] == 0:
         print "No Worms within %f meters."%r
         continue
-    min_dist_to_nodes += [dq[0][0]]
+        
+    # Displays earthquakes outside the range of eulers
+    if we[0].shape[0] == 0:
+        print "No Euler points within %f meters."%r
+        continue
+    
+    min_dist_to_nodes_worms += [dw[0][0]]
+    
+    min_dist_to_nodes_eulers += [de[0][0]]
+    
+    min_dist_to_nodes += [[p.id,min_dist_to_nodes_worms,min_dist_to_nodes_eulers]]
+    
+    
     
     sys.stdout.flush()
 
@@ -252,6 +277,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     # than distance_from_euler or vice-versa
     #p.distance_from_worm = dq[0][0]
 
+accuracy_comparison = np.array(min_dist_to_nodes)
 
 #session.commit()
 print "Done"

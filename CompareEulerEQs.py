@@ -15,6 +15,9 @@ import sys
 
 #Testing things
 
+euler_points = 'ADK_BGA_Euler_Solutions'
+
+earthquakes = 'adk_merged_eqs'
 
 # sqlalchemy vodoo
 Base = declarative_base()
@@ -32,12 +35,12 @@ meta = MetaData()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the Euler solution points
-class ADKBGAEuler(Base):
-	__table__ = Table('ADK_BGA_Euler_Solutions', meta, autoload=True, autoload_with=engine)
+class Euler(Base):
+	__table__ = Table(euler_points, meta, autoload=True, autoload_with=engine)
 
 # We will hook up the earthquake hypocenters
-class ADKMergedEQs(Base):
-    __table__ = Table('adk_merged_eqs', meta, autoload=True, autoload_with=engine)
+class EQs(Base):
+    __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -67,7 +70,7 @@ def kmToDegrees(km):
 
 
 # Pulling in euler points
-euler_query = session.query(ADKBGAEuler).filter(ADKBGAEuler.depth <= 7500.)
+euler_query = session.query(Euler).filter(Euler.depth <= 7500.)
 
 # Turning euler points into numpy array
 euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
@@ -75,9 +78,9 @@ euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
 # Creating scikit-learn KDTree to speed up earthquake-euler point comparison
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
-eq_query = session.query(ADKMergedEQs,
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_Y() )
+eq_query = session.query(EQs,
+                         func.ST_Transform(EQs.geom,32618).ST_X(),
+                         func.ST_Transform(EQs.geom,32618).ST_Y() )
 
 km_10_degs = kmToDegrees(10.)
 
@@ -87,7 +90,7 @@ r = 10000.
 
 min_dist_to_nodes = []
 	
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
+for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
     
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
@@ -104,6 +107,16 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     sys.stdout.flush()
     #print 'NEW EARTHQUAKE'
     
+	# Finding a way to compare the accuracy of worm and Euler points for specific earthquakes
+	
+    # Option 1: write a new column to the database, and then use a GIS tool to compare locations where distance_from_worm is greater
+    # than distance_from_euler or vice-versa
+    #p.distance_from_euler = dq[0][0]
+    
+    # Option 2: 
+    
+
+#session.commit()
 print "Done"
 
 
