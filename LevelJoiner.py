@@ -21,6 +21,7 @@ basename = 'ADKMergedBGA2500'
 
 WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
 
+
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
 class ST_Collect(GenericFunction):
     name = 'ST_Collect'
@@ -45,6 +46,7 @@ if not engine.dialect.has_table(connect, tablenames['levels_points_name']):
     
 meta = MetaData()
 
+Base = declarative_base()
 
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
