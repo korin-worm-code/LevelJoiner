@@ -13,58 +13,19 @@ from sklearn import neighbors
 import numpy as np
 import sys
 
-from WormDBStuff import WormPointBase,WormLevelBase,WormLevelPointsBase
+from WormDBStuff import WormDBStuffFactory
 
-#Testing things
 
 # This is the base of all PostGIS table names for this project
-basename = 'ADK_PSG_UTM_1250_to_max_grad'
-#basename = 'ADKMergedBGA2500'
-#layer_name = basename
-layer_name = 'ADK_PSG_UTM_1250'
-points_name = basename + '_points'
-#levels_name = basename + '_levels'
-levels_name = 'ADK_PSG_UTM_1250' + '_levels'
-levels_points_name = basename + '_levels_points'
+basename = 'ADKMergedBGA2500'
+
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
 
 # This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
 class ST_Collect(GenericFunction):
     name = 'ST_Collect'
     type = Geometry
 
-# Originally Copied from WriteWormsToPostGIS module from BSDWormer; now modified
-
-# sqlalchemy vodoo
-Base = declarative_base()
-
-# This is a class from the "declarative base" 'Object Relational Mapper' (ORM) of sqlalchemy
-# It's job is to map between the database table and Python objects
-# The structure essentially mimics an alread existing table, or declares a new table
-# if we create it here in this code. 
-# In this instance, it already exists.
-#FIXME Change name to WormPoints, and correct in rest of script. Or maybe think about naming in general...
-class WormPoint(Base,WormPointBase):
-    __tablename__ = points_name
-    level = relationship('WormLevel', secondary=levels_points_name)
-    
-class WormLevel(Base,WormLevelBase):
-    __tablename__ = levels_name
-    point = relationship('WormPoint', secondary=levels_points_name)
-    
-class WormLevelPoints(Base,WormLevelPointsBase):
-    __tablename__ = levels_points_name
-    # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
-    # This is the level_id in the external table
-    worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
-    # This is the point id of the END point of a line segment.
-    point_id = Column(Integer, ForeignKey(points_name + '.worm_point_id'), primary_key=True)
-    # In addition to participating in a composite primary key, this field is 
-    # a unique-within-a-level index for worm segments. 
-    #worm_seg_id = Column(Integer,primary_key=True,index=True)
-    # Database magic that links entries in this table with entries in another table
-    worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
-    # Database magic that links entries in this table with entries in another table
-    worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
 
 # Hooking things up to the database system
 db = 'postgresql://frank:f00bar@localhost:5433/frank'
@@ -73,13 +34,13 @@ Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
 
-if not engine.dialect.has_table(connect, layer_name):
+if not engine.dialect.has_table(connect, tablenames['layer_name']):
     raise AttributeError('The Layer table is missing.')
-if not engine.dialect.has_table(connect, points_name):
+if not engine.dialect.has_table(connect, tablenames['points_name']):
     raise AttributeError('The Points table is missing.')
-if not engine.dialect.has_table(connect, levels_name):
+if not engine.dialect.has_table(connect, tablenames['levels_name']):
     raise AttributeError('The Levels table is missing.')
-if not engine.dialect.has_table(connect, levels_points_name):
+if not engine.dialect.has_table(connect, tablenames['levels_points_name']):
     raise AttributeError('The Levels_Points table is missing.')
     
 meta = MetaData()

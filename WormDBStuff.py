@@ -122,7 +122,13 @@ def WormDBStuffFactory(basename):
 		# Database magic that links entries in this table with entries in another table
 		worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
 		
-	return WormPoint, WormLevelPoints, WormLevel
+	tablenames = {}
+	tablenames['layer_name'] = layer_name
+	tablenames['points_name'] = points_name
+	tablenames['levels_name'] = levels_name
+	tablenames['levels_points_name'] = levels_points_name
+		
+	return WormPoint, WormLevelPoints, WormLevel, tablenames
 	
  
  
