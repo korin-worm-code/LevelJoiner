@@ -88,26 +88,22 @@ class WormLevelPointsBase(object):
 Base = declarative_base()
 
 
-class WormDBStufFactory(object):
+def WormDBStufFactory(basename):
 	""" A Factory Class for creating sqlalchemy ORM classes.
 	
 		Design goal: an external thingy that has something like the following signature:
 		WormPoint,WormLevelPoints,WormLevel = WormDBStuffFactory(basename)
 		Where the things returned are Classes that are appropriate for 
 	"""
-        layer_name = ''
-        points_name = ''
-        levels_name = ''
-        levels_points_name = ''
 
-	def __init__(self,basename):
-		self.__class__.layer_name = basename
-		self.__class__.points_name = basename + '_points'
-		self.__class__.levels_name = basename + '_levels'
-		self.__class__.levels_points_name = basename + '_levels_points'
+
+	layer_name = basename
+	points_name = basename + '_points'
+	levels_name = basename + '_levels'
+	levels_points_name = basename + '_levels_points'
 	
 	class WormLevel(Base,WormLevelBase):
-		__tablename__ = __class__.levels_name
+		__tablename__ = levels_name
 		point = relationship('WormPoint', secondary=levels_points_name)
 		
 	class WormPoint(Base,WormPointBase):
@@ -126,8 +122,7 @@ class WormDBStufFactory(object):
 		# Database magic that links entries in this table with entries in another table
 		worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
 		
-	def return_classes(self):
-		return WormPoint, WormLevelPoints, WormLevel
+	return WormPoint, WormLevelPoints, WormLevel
 	
  
  
