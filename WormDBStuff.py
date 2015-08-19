@@ -50,7 +50,6 @@ class WormLevelBase(object):
     # Database magic that links entries in this table with entries in another table
     
 class WormLevelPointsBase(object):
-    # __tablename__ = levels_points_name
     # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
     # This is the level_id in the external table
     #worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
@@ -82,4 +81,17 @@ class WormLevelPointsBase(object):
 
 
 
+def WormDBStufFactory(basename):
+	""" A Factory for creating sqlalchemy ORM classes.
+	
+		Design goal: an external thingy that has something like the following signature:
+		WormPoint,WormLevelPoints,WormLevel = WormDBStuffFactory(basename)
+		Where the things returned are Classes that are appropriate for 
+	"""
+	layer_name = basename
+	points_name = basename + '_points'
+	levels_name = basename + '_levels'
+	levels_points_name = basename + '_levels_points'
+	
+	class 
 
