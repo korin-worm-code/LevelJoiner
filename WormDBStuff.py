@@ -95,27 +95,27 @@ class WormDBStufFactory(object):
 		WormPoint,WormLevelPoints,WormLevel = WormDBStuffFactory(basename)
 		Where the things returned are Classes that are appropriate for 
 	"""
-	def __init__(self,basename):
-		self.layer_name = basename
-		self.points_name = basename + '_points'
-		self.levels_name = basename + '_levels'
-		self.levels_points_name = basename + '_levels_points'
+	def __init__(cls,basename):
+		cls.layer_name = basename
+		cls.points_name = basename + '_points'
+		cls.levels_name = basename + '_levels'
+		cls.levels_points_name = basename + '_levels_points'
 	
 	class WormLevel(Base,WormLevelBase):
-		__tablename__ = self.levels_name
-		point = relationship('WormPoint', secondary=self.levels_points_name)
+		__tablename__ = cls.levels_name
+		point = relationship('WormPoint', secondary=cls.levels_points_name)
 		
 	class WormPoint(Base,WormPointBase):
-		__tablename__ = self.points_name
-		level = relationship('WormLevel', secondary=self.levels_points_name)
+		__tablename__ = cls.points_name
+		level = relationship('WormLevel', secondary=cls.levels_points_name)
 		
 	class WormLevelPoints(Base,WormLevelPointsBase):
-		__tablename__ = self.levels_points_name
+		__tablename__ = cls.levels_points_name
 		# This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
 		# This is the level_id in the external table
-		worm_level_id = Column(Integer, ForeignKey(self.levels_name + '.worm_level_id'), primary_key=True)
+		worm_level_id = Column(Integer, ForeignKey(cls.levels_name + '.worm_level_id'), primary_key=True)
 		# This is the point id of the END point of a line segment.
-		point_id = Column(Integer, ForeignKey(self.points_name + '.worm_point_id'), primary_key=True)
+		point_id = Column(Integer, ForeignKey(cls.points_name + '.worm_point_id'), primary_key=True)
 		# Database magic that links entries in this table with entries in another table
 		worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
 		# Database magic that links entries in this table with entries in another table
