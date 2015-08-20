@@ -92,7 +92,7 @@ for p,p_lon,p_lat in eq_query:
 #.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
+    #eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
     # New scikit_learn.neighbors implementation of the query
     #wq,dq = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
