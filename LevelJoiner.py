@@ -13,7 +13,7 @@ from sklearn import neighbors
 import numpy as np
 import sys
 
-from WormDBStuff import WormDBStuffFactory
+from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
 
 # This is the base of all PostGIS table names for this project
