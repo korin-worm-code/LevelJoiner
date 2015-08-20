@@ -15,6 +15,9 @@ import sys
 
 #Testing things
 
+euler_points = 'ADK_BGA_Euler_Solutions'
+
+earthquakes = 'adk_merged_eqs'
 
 # sqlalchemy vodoo
 Base = declarative_base()
@@ -33,11 +36,11 @@ meta = MetaData()
 # for python object access to the database data. 
 # We will hook up the Euler solution points
 class ADKBGAEuler(Base):
-	__table__ = Table('ADK_BGA_Euler_Solutions', meta, autoload=True, autoload_with=engine)
+	__table__ = Table(euler_points, meta, autoload=True, autoload_with=engine)
 
 # We will hook up the earthquake hypocenters
 class ADKMergedEQs(Base):
-    __table__ = Table('adk_merged_eqs', meta, autoload=True, autoload_with=engine)
+    __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -73,7 +76,7 @@ euler_query = session.query(ADKBGAEuler).filter(ADKBGAEuler.depth <= 7500.)
 euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
 
 # Creating scikit-learn KDTree to speed up earthquake-euler point comparison
-#euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
+euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
 eq_query = session.query(ADKMergedEQs,
                          func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
@@ -88,28 +91,28 @@ r = 10000.
 min_dist_to_nodes = []
 eq_depths = []
 	
-for p,p_lon,p_lat in eq_query:
-#.filter(ADKMergedEQs._Depth_km_ <= 7.5):
+for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     
     # depth must be in meters!
-    #eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
+    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
     
     # New scikit_learn.neighbors implementation of the query
-    #wq,dq = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    wq,dq = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
     
     # Displays earthquakes outside the range
-    #if wq[0].shape[0] == 0:
-    #    print "No Euler points within %f meters."%r
-    #    continue
-    #min_dist_to_nodes += [dq[0][0]]
+    if wq[0].shape[0] == 0:
+        print "No Euler points within %f meters."%r
+        continue
     
-    if type(p._Depth_km_) != float:
-    	print p._Depth_km_
-    	continue
+    min_dist_to_nodes += [dq[0][0]]
     
-    eq_depths += [p._Depth_km_]
+    #if type(p._Depth_km_) != float:
+    #	print p._Depth_km_
+    #	continue
     
-    #sys.stdout.flush()
+    #eq_depths += [p._Depth_km_]
+    
+    sys.stdout.flush()
     #print 'NEW EARTHQUAKE'
     
 print "Done"
