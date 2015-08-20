@@ -103,7 +103,7 @@ for p,p_lon,p_lat in eq_query:
     #    continue
     #min_dist_to_nodes += [dq[0][0]]
     
-    if type(p._Depth_km) != float:
+    if type(p._Depth_km_) != float:
     	print "No depth"
     	continue
     
