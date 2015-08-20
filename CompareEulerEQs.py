@@ -103,7 +103,7 @@ for p,p_lon,p_lat in eq_query:
     #    continue
     #min_dist_to_nodes += [dq[0][0]]
     
-    eq_depths += p._Depth_km_
+    eq_depths += [p._Depth_km_]
     
     #sys.stdout.flush()
     #print 'NEW EARTHQUAKE'
