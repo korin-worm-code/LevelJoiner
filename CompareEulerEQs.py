@@ -63,7 +63,11 @@ r = 10000.
 min_dist_to_nodes = []
 eq_depths = []
 	
-for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0.):
+    
+    if type(p._DepthMeters_) != float:
+    	print p._DepthMeters_
+       	continue
     
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,p._DepthMeters_]
@@ -78,9 +82,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.):
     
     min_dist_to_nodes += [dq[0][0]]
     
-    if type(p._DepthMeters_) != float:
-    	print p._DepthMeters_
-       	continue
+
     
     if p._DepthMeters_ == 0.:
     	print "Zero depth!"
