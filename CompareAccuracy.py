@@ -36,11 +36,11 @@ session = Session()
 connect = engine.connect()
 
 
-if not engine.dialect.has_table(connect, points_name):
+if not engine.dialect.has_table(connect, tablenames["points_name"]):
     raise AttributeError('The Points table is missing.')
-if not engine.dialect.has_table(connect, levels_name):
+if not engine.dialect.has_table(connect, tablenames["levels_name"]):
     raise AttributeError('The Levels table is missing.')
-if not engine.dialect.has_table(connect, levels_points_name):
+if not engine.dialect.has_table(connect, tablenames["levels_points_name"]):
     raise AttributeError('The Levels_Points table is missing.')
     
 meta = MetaData()
