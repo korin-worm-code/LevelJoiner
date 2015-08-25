@@ -156,7 +156,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters
     min_dist_to_nodes += [[p.id,dw[0][0],de[0][0]]]
     
     
-    sys.stdout.flush()
+	#sys.stdout.flush()
 
 	# Finding a way to compare the accuracy of worm and Euler points for specific earthquakes
 	
