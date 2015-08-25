@@ -15,9 +15,9 @@ import sys
 
 #Testing things
 
-euler_points = 'ADK_BGA_Euler_Solutions'
+euler_points = 'adk_bga_euler_new'
 
-earthquakes = 'adk_merged_eqs'
+earthquakes = 'merged_ta_neic_eqs'
 
 # sqlalchemy vodoo
 Base = declarative_base()
@@ -35,42 +35,15 @@ meta = MetaData()
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the Euler solution points
-class ADKBGAEuler(Base):
+class Eulers(Base):
 	__table__ = Table(euler_points, meta, autoload=True, autoload_with=engine)
 
 # We will hook up the earthquake hypocenters
-class ADKMergedEQs(Base):
+class EQs(Base):
     __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
-# A function that converts latitude and longitudes (in degrees)
-# for 2 different points into Great Circle distances in kilometers.
-def gc_dist(lat1,lon1,lat2,lon2):
-    # cribbed from <http://code.activestate.com/recipes/
-    # 576779-calculating-distance-between-two-geographic-points/>
-    # Radius of a sphere with the equivalent volume to the Earth
-    R = 6371.0
-    lat1 = radians(lat1)
-    lon1 = radians(lon1)
-    lat2 = radians(lat2)
-    lon2 = radians(lon2)
-    
-    dlon = (lon2 - lon1)
-    dlat = (lat2 - lat1)
-    a = (sin(dlat/2.))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2.))**2
-    c = 2. * atan2(sqrt(a), sqrt(1.-a))
-    return R * c
-
-
-
-# Utility function: how many degrees away is something km apart on the surface of the Earth
-def kmToDegrees(km):
-    # 6371 is again the radius of the Earth
-    return 360. * km / (6371.*2.*pi)
-
-
-
 # Pulling in euler points
-euler_query = session.query(ADKBGAEuler).filter(ADKBGAEuler.depth <= 7500.)
+euler_query = session.query(Eulers).filter(Eulers.depth <= 15000.)
 
 # Turning euler points into numpy array
 euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
@@ -78,11 +51,10 @@ euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
 # Creating scikit-learn KDTree to speed up earthquake-euler point comparison
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
-eq_query = session.query(ADKMergedEQs,
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_X(),
-                         func.ST_Transform(ADKMergedEQs.geom,32618).ST_Y() )
+eq_query = session.query(EQs,
+                         EQs.geom.ST_X(),
+                         EQs.geom.ST_Y() )
 
-km_10_degs = kmToDegrees(10.)
 
 
 r = 10000.
@@ -91,10 +63,10 @@ r = 10000.
 min_dist_to_nodes = []
 eq_depths = []
 	
-for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.):
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
+    eq_pt = [p_lon,p_lat,p._DepthMeters_]
     
     # New scikit_learn.neighbors implementation of the query
     wq,dq = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
@@ -106,11 +78,14 @@ for p,p_lon,p_lat in eq_query.filter(ADKMergedEQs._Depth_km_ <= 7.5):
     
     min_dist_to_nodes += [dq[0][0]]
     
-    #if type(p._Depth_km_) != float:
-    #	print p._Depth_km_
-    #	continue
+    if type(p._DepthMeters_) != float:
+    	print p._DepthMeters_
+       	continue
     
-    #eq_depths += [p._Depth_km_]
+    if p._DepthMeters_ == 0.:
+    	print "Zero depth!"
+    
+    eq_depths += [p._DepthMeters_]
     
     sys.stdout.flush()
     #print 'NEW EARTHQUAKE'
