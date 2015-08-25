@@ -63,7 +63,7 @@ r = 10000.
 min_dist_to_nodes = []
 eq_depths = []
 	
-for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0.):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs_DepthMeters_ != 5000.):
     
     if type(p._DepthMeters_) != float:
     	print p._DepthMeters_
