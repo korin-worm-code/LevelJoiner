@@ -36,8 +36,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
 
-if not engine.dialect.has_table(connect, tablenames['layer_name']):
-    raise AttributeError('The Layer table is missing.')
 if not engine.dialect.has_table(connect, tablenames['points_name']):
     raise AttributeError('The Points table is missing.')
 if not engine.dialect.has_table(connect, tablenames['levels_name']):
