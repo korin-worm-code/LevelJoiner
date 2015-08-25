@@ -17,9 +17,9 @@ from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
 
 # This is the base of all PostGIS table names for this project
-basename = 'ADKMergedBGA2500'
+basename = 'ravat_ADK_PSG1250'
 
-earthquakes = 'adk_merged_eqs'
+earthquakes = 'merged_ta_neic_eqs'
 
 WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
 
@@ -96,8 +96,8 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 eq_query = session.query(EQs,
-                         func.ST_Transform(EQs.geom,32618).ST_X(),
-                         func.ST_Transform(EQs.geom,32618).ST_Y() )
+                         EQs.geom.ST_X(),
+                         EQs.geom.ST_Y() )
 
 
 r = 10000.
@@ -109,10 +109,10 @@ min_dist_to_nodes = []
 
 
 #for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
-for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.,EQs._DepthMeters_ !=0.,EQs._DepthMeters_ != 1000.,EQs._DepthMeters_ != 5000.):
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
+    eq_pt = [p_lon,p_lat,p._DepthMeters_]
     
     # New scikit_learn.neighbors implementation of the query
     wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
