@@ -13,101 +13,18 @@ from sklearn import neighbors
 import numpy as np
 import sys
 
-#Testing things
+from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
-# This is the base of all PostGIS table names for this project
-# With a little luck, all of this "by hand" construction of tablenames
-# will get fixed in the worming code shortly, but for now, let's keep on doing this.
-basename = 'ADKMergedBGA2500_to_max_grad'
-#basename = 'ADKMergedBGA2500'
-#layer_name = basename
-layer_name = 'ADKMergedBGA2500'
-points_name = basename + '_points'
-#levels_name = basename + '_levels'
-levels_name = 'ADKMergedBGA2500' + '_levels'
-levels_points_name = basename + '_levels_points'
+basename = 'ravat_ADK_PSG1250'
 
-earthquakes = 'adk_merged_eqs_distance_from_worms_and_eulers'
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
 
-euler_points = 'ADK_BGA_Euler_Solutions'
+earthquakes = 'merged_ta_neic_eqs'
 
-# This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
-class ST_Collect(GenericFunction):
-    name = 'ST_Collect'
-    type = Geometry
-
-# Originally Copied from WriteWormsToPostGIS module from BSDWormer; now modified
+euler_points = 'adk_psg_euler_new'
 
 # sqlalchemy vodoo
 Base = declarative_base()
-
-# This is a class from the "declarative base" 'Object Relational Mapper' (ORM) of sqlalchemy
-# It's job is to map between the database table and Python objects
-# The structure essentially mimics an alread existing table, or declares a new table
-# if we create it here in this code. 
-# In this instance, it already exists.
-#FIXME Change name to WormPoints, and correct in rest of script. Or maybe think about naming in general...
-class WormPoint(Base):
-    __tablename__ = points_name
-    # Primary Key. Boring.
-    worm_point_id = Column(Integer, primary_key=True, index=True)
-    # An id from the worming code. I don't remember if it was unique, so I didn't use it as a PK.
-    vtk_id = Column(Integer,index=True)
-    # Coordinates of the point in some 'native' CRS
-    x = Column(Float)
-    y = Column(Float)
-    z = Column(Float)
-    # The scalar value of the magnitude of the horizontal gradient
-    grad = Column(Float)
-    # The height of upward continuation from which the grad and coordinates were drawn.
-    height = Column(Float)
-    # A PostGIS point geometry, in the native CRS
-    pt = Column(Geometry('POINT'),index=True)
-    # Database magic that links entries in this table with entries in another table
-    level = relationship('WormLevel', secondary=levels_points_name)
-    # A duplicate of pt in WGS84 coordinates; converted by PostGIS at write-time
-    wgs84_pt = Column(Geometry('POINT'),index=True)
-
-    
-class WormLevel(Base):
-    __tablename__ = levels_name
-    # A PK, there are only ~10 entries in this table, so it's tiny, so no index.
-    worm_level_id = Column(Integer, primary_key=True)
-    # The actual level (prob in meters, but potentially varies...)
-    level = Column(Float)
-    # Database magic that links entries in this table with entries in another table
-    point = relationship('WormPoint', secondary=levels_points_name)
-    
-class WormLevelPoints(Base):
-    __tablename__ = levels_points_name
-    # This table has a "composite primary key" composed of the first 2 ForeignKey entries and the internal primary key
-    # This is the level_id in the external table
-    worm_level_id = Column(Integer, ForeignKey(levels_name + '.worm_level_id'), primary_key=True)
-    # This is the point id of the END point of a line segment.
-    point_id = Column(Integer, ForeignKey(points_name + '.worm_point_id'), primary_key=True)
-    # In addition to participating in a composite primary key, this field is 
-    # a unique-within-a-level index for worm segments. 
-    worm_seg_id = Column(Integer,primary_key=True,index=True)
-    # Database magic that links entries in this table with entries in another table
-    worm_level = relationship(WormLevel, backref=backref("worm_point_assoc"))
-    # Database magic that links entries in this table with entries in another table
-    worm_point = relationship(WormPoint, backref=backref("worm_level_assoc"))
-    # This is an index number internal to each worm segment, numbering the edges
-    # FIXME (maybe) This terminology needs to be cleaned up.
-    seg_sequence_num = Column(Integer)
-    # This holds the PostGIS geometry structure for a single edge, in some native CRS.
-    line_segmt = Column(Geometry('LINESTRING'),index=True)
-    # This scalar gradient value is derived from the average of the point grads on either end of the edge
-    # Currently, the upstream code is doing that for the LOG(value), so this is in fact now
-    # sqrt(grad(pt1) * grad(pt2))
-    line_grad = Column(Float)
-    # The azimuth of the edge in degrees East of North.
-    azimuth = Column(Float)
-    # This is the point ID in the points table of the starting point of an edge
-    # FIXME (maybe) this could and probably should be an actual relation into the points table, for ease of retrieval.
-    start_point_id = Column(Integer)
-    # This is a duplicate of line_segmt but explicitly stored in wgs84.
-    wgs84_line_segmt = Column(Geometry('LINESTRING'),index=True)
 
 
 
@@ -118,8 +35,7 @@ Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
 
-if not engine.dialect.has_table(connect, layer_name):
-    raise AttributeError('The Layer table is missing.')
+
 if not engine.dialect.has_table(connect, points_name):
     raise AttributeError('The Points table is missing.')
 if not engine.dialect.has_table(connect, levels_name):
@@ -141,30 +57,9 @@ class Euler(Base):
 class EQs(Base):
     __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
-# A function that converts latitude and longitudes (in degrees)
-# for 2 different points into Great Circle distances in kilometers.
-def gc_dist(lat1,lon1,lat2,lon2):
-    # cribbed from <http://code.activestate.com/recipes/
-    # 576779-calculating-distance-between-two-geographic-points/>
-    # Radius of a sphere with the equivalent volume to the Earth
-    R = 6371.0
-    lat1 = radians(lat1)
-    lon1 = radians(lon1)
-    lat2 = radians(lat2)
-    lon2 = radians(lon2)
-    
-    dlon = (lon2 - lon1)
-    dlat = (lat2 - lat1)
-    a = (sin(dlat/2.))**2 + cos(lat1) * cos(lat2) * (sin(dlon/2.))**2
-    c = 2. * atan2(sqrt(a), sqrt(1.-a))
-    return R * c
 
 
 
-# Utility function: how many degrees away is something km apart on the surface of the Earth
-def kmToDegrees(km):
-    # 6371 is again the radius of the Earth
-    return 360. * km / (6371.*2.*pi)
 
 
 # This is an example of the sqlalchemy way to encapsulate a SQL query.
@@ -207,26 +102,21 @@ worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 
 # Pulling in euler points
-euler_query = session.query(Euler).filter(Euler.depth <= 7500.)
+euler_query = session.query(Euler).filter(Euler.depth <= 15000.)
 
 # Turning euler points into numpy array
-euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
+euler_pt_coords = np.array([[e.x_euler,e.y_euler,e.depth] for e in euler_query])
 
 # Creating scikit-learn KDTree to speed up earthquake-euler point comparison
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
 
 eq_query = session.query(EQs,
-                         func.ST_Transform(EQs.geom,32618).ST_X(),
-                         func.ST_Transform(EQs.geom,32618).ST_Y() )
+                         EQs.geom.ST_X(),
+                         EQs.geom.ST_Y() )
 
-# This is a "north unit vector" 
-North = Vector(x=1., y=0., z=0.)
-km_10_degs = kmToDegrees(10.)
 
-# sqlalchemy voodoo, these keep aliases of tables for constructing "subqueries" 
-wlp = aliased(WormLevelPoints)
-wp = aliased(WormPoint)
+
 
 # THE MAIN OUTER LOOP
 # We are looping over everyything in point_query, with extra restrictions, ordering, and limits...
@@ -238,11 +128,13 @@ r = 10000.
 
 min_dist_to_nodes = []
 
+distance_to_worms = []
+distance_to_eulers = []
 
-for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters_ != 0.,EQs._DepthMeters != 1000.,EQs._DepthsMeters_ != 5000.):
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._Depth_km_]
+    eq_pt = [p_lon,p_lat,p._DepthMeters_]
     
     # New scikit_learn.neighbors implementation of the query for worms
     ww,dw = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
@@ -252,17 +144,16 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
 	
 	# Displays earthquakes outside the range of worms
     if ww[0].shape[0] == 0:
-        print "No Worms within %f meters."%r
+    #    print "No Worms within %f meters."%r
         continue
         
     # Displays earthquakes outside the range of eulers
     if we[0].shape[0] == 0:
-        print "No Euler points within %f meters."%r
+    #    print "No Euler points within %f meters."%r
         continue
     
     
     min_dist_to_nodes += [[p.id,dw[0][0],de[0][0]]]
-    
     
     
     sys.stdout.flush()
@@ -271,11 +162,13 @@ for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ <= 7.5):
 	
     # Option 1: write a new column to the database, and then use a GIS tool to compare locations where distance_from_worm is greater
     # than distance_from_euler or vice-versa
-    p.distance_to_worms = dw[0][0]
-    p.distance_to_eulers = de[0][0]
+    #p.distance_to_worms = dw[0][0]
+    #p.distance_to_eulers = de[0][0]
+    distance_to_worms += [dw[0][0]]
+    distance_to_eulers += [de[0][0]]
 
 
-session.commit()
+#session.commit()
 print "Done"
     
 
