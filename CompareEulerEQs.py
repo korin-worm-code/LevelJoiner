@@ -46,7 +46,7 @@ class EQs(Base):
 euler_query = session.query(Eulers).filter(Eulers.depth <= 15000.)
 
 # Turning euler points into numpy array
-euler_pt_coords = np.array([[e.xeuler,e.yeuler,e.depth] for e in euler_query])
+euler_pt_coords = np.array([[e.x_euler,e.y_euler,e.depth] for e in euler_query])
 
 # Creating scikit-learn KDTree to speed up earthquake-euler point comparison
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
