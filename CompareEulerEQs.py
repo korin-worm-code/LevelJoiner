@@ -62,6 +62,7 @@ r = 10000.
 
 min_dist_to_nodes = []
 eq_depths = []
+closest_euler += {}
 	
 for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs._DepthMeters_ != 5000.):
     
@@ -82,6 +83,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMete
     
     min_dist_to_nodes += [dq[0][0]]
     
+    closest_euler += [[p.id,wq[0],dq[0][0]]]
 
     
     if p._DepthMeters_ == 0.:

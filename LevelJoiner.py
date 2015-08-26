@@ -19,14 +19,14 @@ from WormDBStuff.WormDBStuff import WormDBStuffFactory
 # This is the base of all PostGIS table names for this project
 basename = 'ADKMergedBGA2500'
 
+# Name of the earthquake table
 earthquakes = 'merged_ta_neic_eqs'
 
-WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
+# This determines whether or not the database has been trimmed to the maximum gradient, for table naming purposes
+max_grad = True
 
-# This code is an example of wrapping a PostGIS function that is not already wrapped via geoalchemy2
-class ST_Collect(GenericFunction):
-    name = 'ST_Collect'
-    type = Geometry
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = max_grad)
+
 
 
 # Hooking things up to the database system
