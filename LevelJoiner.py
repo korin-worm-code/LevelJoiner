@@ -23,9 +23,8 @@ basename = 'ADKMergedBGA2500'
 earthquakes = 'merged_ta_neic_eqs'
 
 # This determines whether or not the database has been trimmed to the maximum gradient, for table naming purposes
-max_grad = True
 
-WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = max_grad)
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = True)
 
 
 

@@ -21,9 +21,8 @@ basename = 'ADKMergedBGA2500'
 
 euler_points = 'adk_bga_euler_new'
 
-max_grad = True
 
-WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = max_grad)
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = True)
 
 
 # sqlalchemy vodoo
