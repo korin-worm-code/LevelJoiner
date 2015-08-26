@@ -103,7 +103,7 @@ r = 10000.
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
-closest_worm = {}
+closest_worm = []
 
 
 #for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
