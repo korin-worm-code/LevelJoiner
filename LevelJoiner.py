@@ -17,7 +17,7 @@ from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
 
 # This is the base of all PostGIS table names for this project
-basename = 'ravat_ADK_PSG1250'
+basename = 'ADKMergedBGA2500'
 
 earthquakes = 'merged_ta_neic_eqs'
 
@@ -104,6 +104,7 @@ r = 10000.
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
+closest_worm = {}
 
 
 #for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
@@ -119,6 +120,8 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.,EQs._DepthMeter
     #    print "No Worms within %f meters."%r
         continue
     min_dist_to_nodes += [dq[0][0]]
+    
+    closest_worm += [[p.id,wq[0],dq[0][0]]]
     
     
     #print p.id, dq[0][0]
