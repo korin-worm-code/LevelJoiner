@@ -21,8 +21,10 @@ basename = 'ADKMergedBGA2500'
 
 euler_points = 'adk_bga_euler_new'
 
+max_grad = True
 
-# Originally Copied from WriteWormsToPostGIS module from BSDWormer; now modified
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = max_grad)
+
 
 # sqlalchemy vodoo
 Base = declarative_base()
