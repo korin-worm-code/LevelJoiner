@@ -89,8 +89,11 @@ worm_rec = np.rec.fromarrays([worm_sgmt_levels, worm_sgmt_ids, worm_sgmt_seq_num
 all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_level_points',WormLevelPoints)])
 
 
-# Trying the new scikit-learn implementation of 
-worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
+# Trying the new scikit-learn implementation of KDTree
+#worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
+
+# Testing using a Ball Tree instead of a KDTree
+worm_ball = neighbors.BallTree(worm_pt_coords,leaf_size=100)
 
 eq_query = session.query(EQs,
                          EQs.geom.ST_X(),
@@ -114,7 +117,12 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.,EQs._DepthMeter
     eq_pt = [p_lon,p_lat,p._DepthMeters_]
     
     # New scikit_learn.neighbors implementation of the query
-    wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    #wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    
+    
+    # Testing with Ball Tree
+    wq,dq = worm_ball.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    
     
     if wq[0].shape[0] == 0:
     #    print "No Worms within %f meters."%r
