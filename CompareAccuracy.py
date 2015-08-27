@@ -17,7 +17,7 @@ from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
 basename = 'ravat_ADK_PSG1250'
 
-WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename)
+WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = True)
 
 earthquakes = 'merged_ta_neic_eqs'
 
