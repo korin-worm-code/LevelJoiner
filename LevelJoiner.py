@@ -104,6 +104,7 @@ r = 10000.
 
 min_dist_to_nodes = []
 closest_worm = []
+depth_analysis = []
 
 
 #for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
@@ -123,12 +124,11 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000.,EQs._DepthMeter
     closest_worm += [[p.id,wq[0],dq[0][0]]]
     
     
-    #print p.id, dq[0][0]
+    depth_analysis += [[p._DepthMeters_,dq[0][0]]]
+    
+    
     sys.stdout.flush()
     
-    #p.distance_from_worm = dq[0][0]
-    
-    #print 'NEW EARTHQUAKE'
     
 print "Done"
 

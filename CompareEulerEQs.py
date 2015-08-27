@@ -15,7 +15,7 @@ import sys
 
 #Testing things
 
-euler_points = 'adk_bga_euler_new'
+euler_points = 'adk_psg_euler_new'
 
 earthquakes = 'merged_ta_neic_eqs'
 
@@ -62,7 +62,8 @@ r = 10000.
 
 min_dist_to_nodes = []
 eq_depths = []
-closest_euler += {}
+closest_euler = []
+depth_analysis = []
 	
 for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs._DepthMeters_ != 5000.):
     
@@ -78,7 +79,7 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMete
     
     # Displays earthquakes outside the range
     if wq[0].shape[0] == 0:
-        print "No Euler points within %f meters."%r
+    #    print "No Euler points within %f meters."%r
         continue
     
     min_dist_to_nodes += [dq[0][0]]
@@ -86,10 +87,8 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMete
     closest_euler += [[p.id,wq[0],dq[0][0]]]
 
     
-    if p._DepthMeters_ == 0.:
-    	print "Zero depth!"
+    depth_analysis += [[p._DepthMeters_,dq[0][0]]]
     
-    eq_depths += [p._DepthMeters_]
     
     sys.stdout.flush()
     #print 'NEW EARTHQUAKE'
