@@ -130,6 +130,7 @@ min_dist_to_nodes = []
 
 distance_to_worms = []
 distance_to_eulers = []
+depth_analysis = []
 
 for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters_ != 0.,EQs._DepthMeters_ != 1000.,EQs._DepthMeters_ != 5000.):
     
@@ -154,6 +155,8 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters
     
     
     min_dist_to_nodes += [[p.id,dw[0][0],de[0][0]]]
+    
+    depth_analysis += [[p._DepthMeters_,dw[0][0],de[0][0]]]
     
     
 	#sys.stdout.flush()
