@@ -132,7 +132,7 @@ distance_to_worms = []
 distance_to_eulers = []
 depth_analysis = []
 
-for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters_ != 0.,EQs._DepthMeters_ != 1000.,EQs._DepthMeters_ != 5000.):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters_ != 0.,EQs._DepthMeters_ != 1000.,EQs._DepthMeters_ != 5000., EQs.bix_potential_blasts == FALSE):
     
     # depth must be in meters!
     eq_pt = [p_lon,p_lat,p._DepthMeters_]

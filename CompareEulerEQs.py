@@ -65,7 +65,7 @@ eq_depths = []
 closest_euler = []
 depth_analysis = []
 	
-for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs._DepthMeters_ != 5000.):
+for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs._DepthMeters_ != 5000., EQs.bix_potential_blasts == FALSE):
     
     if type(p._DepthMeters_) != float:
     	print p._DepthMeters_
