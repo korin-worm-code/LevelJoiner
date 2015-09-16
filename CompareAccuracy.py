@@ -12,6 +12,7 @@ from scipy import spatial
 from sklearn import neighbors
 import numpy as np
 import sys
+from matplotlib import pyplot as plt
 
 from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
@@ -158,7 +159,6 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters
     
     depth_analysis += [[p._DepthMeters_,dw[0][0],de[0][0]]]
     
-    
 	#sys.stdout.flush()
 
 	# Finding a way to compare the accuracy of worm and Euler points for specific earthquakes
@@ -172,6 +172,8 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000,EQs._DepthMeters
 
 
 #session.commit()
+
+
 print "Done"
     
 
