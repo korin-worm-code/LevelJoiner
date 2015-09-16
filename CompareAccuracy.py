@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 
 from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
-basename = 'ravat_ADK_PSG1250'
+basename = 'AKDMergedBGA2500'
 
 WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = True)
 
