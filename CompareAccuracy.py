@@ -22,7 +22,7 @@ WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,
 
 earthquakes = 'merged_ta_neic_eqs'
 
-euler_points = 'adk_psg_euler_new'
+euler_points = 'adk_bga_euler_new'
 
 # sqlalchemy vodoo
 Base = declarative_base()
