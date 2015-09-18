@@ -15,7 +15,7 @@ import sys
 
 #Testing things
 
-euler_points = 'adk_psg_euler_new'
+euler_points = 'adk_bga_euler_new'
 
 earthquakes = 'merged_ta_neic_eqs'
 
