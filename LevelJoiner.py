@@ -17,7 +17,7 @@ from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
 
 # This is the base of all PostGIS table names for this project
-basename = 'ADKMergedBGA2500'
+basename = 'ADKFinalBGA2500'
 
 # Name of the earthquake table
 earthquakes = 'merged_ta_neic_eqs'
