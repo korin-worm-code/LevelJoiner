@@ -19,7 +19,7 @@ import sys
 # With a little luck, all of this "by hand" construction of tablenames
 # will get fixed in the worming code shortly, but for now, let's keep on doing this.
 
-basename = 'AppBasinMergedBGA2500'
+basename = 'AppBasinMergedBGA2500Final'
 layer_name = basename
 points_name = basename + '_points'
 levels_name = basename + '_levels'
@@ -62,7 +62,7 @@ class WormPoint(Base):
     # A duplicate of pt in WGS84 coordinates; converted by PostGIS at write-time
     wgs84_pt = Column(Geometry('POINT'),index=True)
     normal_angle_to_sigma_1 = Column(Float)
-    angle_variance = Column(Float)
+    angle_std_deviation = Column(Float)
     risk_category = Column(Integer)
     
 class WormLevel(Base):
@@ -108,14 +108,12 @@ class WormLevelPoints(Base):
 
 
 # Hooking things up to the database system
-db = 'postgresql://frank@localhost/frank'
+db = 'postgresql://frank:f00bar@localhost:5433/frank'
 engine = create_engine('%s'%db, echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
 
-if not engine.dialect.has_table(connect, layer_name):
-    raise AttributeError('The Layer table is missing.')
 if not engine.dialect.has_table(connect, points_name):
     raise AttributeError('The Points table is missing.')
 if not engine.dialect.has_table(connect, levels_name):
@@ -124,13 +122,14 @@ if not engine.dialect.has_table(connect, levels_points_name):
     raise AttributeError('The Levels_Points table is missing.')
     
 meta = MetaData()
+#meta_eq = MetaData(schema='gpfa_ab_final_earthquake_data')
 
 
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
 # We will hook up the earthquake hypocenters
 class AppBasinMergedEQs(Base):
-    __table__ = Table('merged_eqs', meta, autoload=True, autoload_with=engine)
+    __table__ = Table('clipped_ta_neic_eqs_app_basin_through_may_2015', meta, autoload=True, autoload_with=engine)
 
 # A function that converts latitude and longitudes (in degrees)
 # for 2 different points into Great Circle distances in kilometers.
@@ -162,7 +161,7 @@ def kmToDegrees(km):
 # This particular query builds a database "join" (perhaps not exactly due to the sqlalchemy innards)
 # where all entities returned will be the edge "end point" and "edge" data structures that match.
 # This is actually the head end of more restrictive filterings of the database tables
-lvl_ids = [1,2,3]
+lvl_ids = [1,2,3,4,5,6,7]
 
 point_query = session.query(WormPoint,WormLevelPoints)\
                      .filter(WormPoint.worm_point_id == WormLevelPoints.point_id,WormLevelPoints.worm_level_id.in_(lvl_ids))
@@ -202,8 +201,8 @@ all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_
 worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
 eq_query = session.query(AppBasinMergedEQs,
-                         func.ST_Transform(AppBasinMergedEQs.wkb_geometry,32618).ST_X(),
-                         func.ST_Transform(AppBasinMergedEQs.wkb_geometry,32618).ST_Y() )
+                         func.ST_Transform(AppBasinMergedEQs.geom,32618).ST_X(),
+                         func.ST_Transform(AppBasinMergedEQs.geom,32618).ST_Y() )
 
 # This is a "north unit vector" 
 North = Vector(x=1., y=0., z=0.)
@@ -243,15 +242,17 @@ classes = []
 #r1 = connection.execute(adk_eq_table.select())
 
 #for p,p_lon,p_lat in eq_query.filter(AppBasinMergedEQs._depth_km_ == 0.).order_by(AppBasinMergedEQs._magnitude_):
-for p,p_lon,p_lat in eq_query.filter(AppBasinMergedEQs._depth_km_ <= 7.5, AppBasinMergedEQs._depth_km_ != 0.):
+for p,p_lon,p_lat in eq_query.filter(AppBasinMergedEQs._DepthMeters_ <= 7000., 
+                                     AppBasinMergedEQs._DepthMeters_ != 0.,
+                                     AppBasinMergedEQs.bix_potential_blasts == False ):
 #for p,p_lon,p_lat in eq_query:
     #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
     
-    if (p_lon is None) or (p_lat is None) or (p._depth_km_ is None):
+    if (p_lon is None) or (p_lat is None) or (p._DepthMeters_ is None):
         continue
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,1000.*p._depth_km_]
+    eq_pt = [p_lon,p_lat,p._DepthMeters_]
     
     # Old scipy.spatial implementation of the query
     # dq,wq = worm_kd.query(eq_pt,k=20,distance_upper_bound=r)
