@@ -15,9 +15,11 @@ import sys
 
 #Testing things
 
-euler_points = 'adk_bga_euler_new'
+#euler_points = 'adk_bga_euler_new'
+euler_points = 'adk_psg_euler_new'
 
-earthquakes = 'merged_ta_neic_eqs'
+earthquakes = 'korin_anf_5km'
+#earthquakes = 'korin_anf_7_5km'
 
 # sqlalchemy vodoo
 Base = declarative_base()
@@ -52,8 +54,10 @@ euler_pt_coords = np.array([[e.x_euler,e.y_euler,e.depth] for e in euler_query])
 euler_kd = neighbors.KDTree(euler_pt_coords,leaf_size=100)
 
 eq_query = session.query(EQs,
-                         EQs.geom.ST_X(),
-                         EQs.geom.ST_Y() )
+                         #EQs.geom.ST_X(),
+                         #EQs.geom.ST_Y() )
+			 func.ST_Transform(EQs.geom,32618).ST_X(),
+                         func.ST_Transform(EQs.geom,32618).ST_Y() )
 
 
 
@@ -65,14 +69,14 @@ eq_depths = []
 closest_euler = []
 depth_analysis = []
 	
-for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMeters_ != 0., EQs._DepthMeters_ != 1000., EQs._DepthMeters_ != 5000., EQs.bix_potential_blasts == "FALSE"):
+for p,p_lon,p_lat in eq_query.filter(EQs.depth <= 15., EQs.depth != 0., EQs.depth != 1., EQs.depth != 5.):#, EQs.bix_potential_blasts == "FALSE"):
     
-    if type(p._DepthMeters_) != float:
-    	print p._DepthMeters_
-       	continue
+#    if type(p._DepthMeters_) != float:
+#    	print p._DepthMeters_
+#       	continue
     
     # depth must be in meters!
-    eq_pt = [p_lon,p_lat,p._DepthMeters_]
+    eq_pt = [p_lon,p_lat,p.depth*1000]
     
     # New scikit_learn.neighbors implementation of the query
     wq,dq = euler_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
@@ -84,10 +88,10 @@ for p,p_lon,p_lat in eq_query.filter(EQs._DepthMeters_ <= 15000., EQs._DepthMete
     
     min_dist_to_nodes += [dq[0][0]]
     
-    closest_euler += [[p.id,wq[0],dq[0][0]]]
+    closest_euler += [[p.orid,wq[0],dq[0][0]]]
 
     
-    depth_analysis += [[p._DepthMeters_,dq[0][0]]]
+    depth_analysis += [[p.depth,dq[0][0]]]
     
     
     sys.stdout.flush()

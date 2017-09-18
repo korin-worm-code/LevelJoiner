@@ -12,25 +12,22 @@ from scipy import spatial
 from sklearn import neighbors
 import numpy as np
 import sys
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as plt
 
 from WormDBStuff.WormDBStuff import WormDBStuffFactory
 
-#Testing things
 
-basename = 'ravat_ADK_PSG1250'
-#basename = 'ADKFinalBGA2500'
+# This is the base of all PostGIS table names for this project
+basename = 'ADKFinalBGA2500'
 
-euler_points = 'adk_psg_euler_new'
+# Name of the earthquake table
+earthquakes = 'korin_anf_5km'
 
+# This determines whether or not the database has been trimmed to the maximum gradient, for table naming purposes
 
 WormPoint, WormLevelPoints, WormLevel, tablenames = WormDBStuffFactory(basename,to_max_grad = True)
-
-
-# sqlalchemy vodoo
-Base = declarative_base()
 
 
 
@@ -41,13 +38,6 @@ Session = sessionmaker(bind=engine)
 session = Session()
 connect = engine.connect()
 
-#if not engine.dialect.has_table(connect, points_name):
-#    raise AttributeError('The Points table is missing.')
-#if not engine.dialect.has_table(connect, levels_name):
-#    raise AttributeError('The Levels table is missing.')
-#if not engine.dialect.has_table(connect, levels_points_name):
-#    raise AttributeError('The Levels_Points table is missing.')
-
 if not engine.dialect.has_table(connect, tablenames['points_name']):
     raise AttributeError('The Points table is missing.')
 if not engine.dialect.has_table(connect, tablenames['levels_name']):
@@ -57,12 +47,13 @@ if not engine.dialect.has_table(connect, tablenames['levels_points_name']):
     
 meta = MetaData()
 
+Base = declarative_base()
 
 # This is a black magic function, that hooks up an existing database table, but that still allows
 # for python object access to the database data. 
-# We will hook up the earthquake hypocenters (not valid anymore)
-class Eulers(Base):
-    __table__ = Table(euler_points, meta, autoload=True, autoload_with=engine)
+# We will hook up the earthquake hypocenters
+class EQs(Base):
+    __table__ = Table(earthquakes, meta, autoload=True, autoload_with=engine)
 
 
 
@@ -101,63 +92,95 @@ worm_rec = np.rec.fromarrays([worm_sgmt_levels, worm_sgmt_ids, worm_sgmt_seq_num
 all_worm_data = np.array(all_worm_points,dtype=[('worm_point',WormPoint),('worm_level_points',WormLevelPoints)])
 
 
-# Creating SciPy KDTree to speed up earthquake-worm point comparison
-#worm_kd = spatial.KDTree(worm_pt_coords,leafsize=50)
-# Updating to be runable with mag data
-worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
+# Trying the new scikit-learn implementation of KDTree
+#worm_kd = neighbors.KDTree(worm_pt_coords,leaf_size=100)
 
-# Pulling in the Euler points from the database
-euler_query = session.query(Eulers)
+# Testing using a Ball Tree instead of a KDTree
+worm_ball = neighbors.BallTree(worm_pt_coords,leaf_size=100)
+
+eq_query = session.query(EQs,
+                         func.ST_Transform(EQs.geom,32618).ST_X(),
+                         func.ST_Transform(EQs.geom,32618).ST_Y() )
+
+#eq_query = session.query(EQs)
 
 
-
-# This is the distance we are searching within, in meters
 r = 10000.
+
 
 # Let's build something for some quick stats...
 
 min_dist_to_nodes = []
-#far_eq = []
+closest_worm = []
+depth_analysis = []
+
+depth_error1 = 0
+smajax1 = 0
+hits = 0
+
+#for p in eq_query:
+#	depth_error1 += ((p.sdepth)^2)
+#	smajax1 += ((p.smajax)^2)
+
+#depth_error = (depth_error1 / 564) ** 0.5
+#smajax = (smajax / 564) ** 0.5
 
 
-
-for p in euler_query.filter(Eulers.depth <= 15000.):
-	# We are no longer working with earthquakes, so we don't need to sort them by magnitude
-	#.filter(ADKMergedEQs._Depth_km_ == 0.).order_by(ADKMergedEQs._Magnitude_):
-    #print p._latitude_, p._longitude_, p._depth_km_, p._magnitude_
+#for p,p_lon,p_lat in eq_query.filter(EQs._Depth_km_ == 0.).order_by(EQs._Magnitude_):
+for p,p_lon,p_lat in eq_query.filter(EQs.depth <= 15.,EQs.depth !=0.,EQs.depth != 1.,EQs.depth != 5.):
+#,EQs.bix_potential_blasts == "FALSE"):
     
-    # depth must be in meters!
-    euler_pt = [p.x_euler,p.y_euler,p.depth]
+    # depth must be in meters, not kilometers!
+    eq_pt = [p_lon,p_lat,p.depth*1000.0]
     
-    # SciPy KDTrees
-    #dq,wq = worm_kd.query(euler_pt,k=20,distance_upper_bound=r)
-    wq,dq = worm_kd.query_radius(euler_pt,r=r,return_distance = True,sort_results=True)
+    # New scikit_learn.neighbors implementation of the query
+    #wq,dq = worm_kd.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
     
     
-    # New return style
+    # Testing with Ball Tree
+    wq,dq = worm_ball.query_radius(eq_pt,r=r,return_distance = True,sort_results=True)
+    
+    sdepth = p.sdepth
+    smajax = p.smajax
+    depth_error1 = depth_error1 + (sdepth ** 2)
+    smajax1 = smajax1 + (smajax ** 2)
+    hits = hits + 1
+    
     if wq[0].shape[0] == 0:
     #    print "No Worms within %f meters."%r
         continue
-    
-    # Distance to the closest worm point
     min_dist_to_nodes += [dq[0][0]]
     
-
+    hit_error = max(p.sdepth,p.smajax)
+    
+    closest_worm += [[p.orid,wq[0],dq[0][0]],hit_error]
+    
+    
+    depth_analysis += [[p.sdepth,dq[0][0]]]
+    
     sys.stdout.flush()
     
+    
+#print depth_error
+#print smajax
 
+print len(min_dist_to_nodes)
 
-plt.hist(min_dist_to_nodes, bins=100, cumulative=False)
-plt.xlabel('Distance (meters)')
-plt.ylabel('Count')
-plt.title('Histogram of Distances from Euler Points to Worm Points')
-plt.savefig('ADKPSGEulerWormDist.png')
+depth_error = ((depth_error1 / float(hits)) ** 0.5)
+smajax_error = ((smajax1 / float(hits)) ** 0.5)
 
+print depth_error
+print smajax_error
+
+#plt.hist(min_dist_to_nodes, bins=100, cumulative=False)
+#plt.xlabel('Distance (meters)')
+#plt.ylabel('Count')
+#plt.title('Histogram of Distances from EQs to Worm Points')
+#plt.savefig('ADK_BGA_ANF_EQsDistToWormsHistogram.png')
+
+print "Done"
 
 #session.commit()
-
-
-
 
 
 

@@ -1,0 +1,18 @@
+for ANF 5km BGA: 405 hits out of 564 earthquakes (filtered to 15km max depth)
+RMS of error in depth = 2130.7m    using this for error bar
+RMS of error in smajax = 1924.9m
+propagated error = sqrt(2500^2 + 2131^2) = 3285m
+for ANF 5km PSG: 362 hits out of 564 earthquakes (filtered to 15km max depth) (run using ravat_ADK_PSG1250)
+RMS of error in depth = 2130.7m    using this for error bar
+RMS of error in smajax = 1924.9m
+propagated error = sqrt(1250^2 + 2131^2) = 2471m
+for ANF 7.5km BGA: 418 hits out of 579 earthquakes (filtered to 15km max depth)
+RMS of error in depth = 2208.1m    using this for error bar
+RMS of error in smajax = 2153.7m
+propagated error = sqrt(2500^2 + 2208^2) = 3335m
+for ANF 7.5km PSG: 376 hits out of 579 earthquakes (filtered to 15km max depth) (run using ravat_ADK_PSG1250)
+RMS of error in depth = 2208.1m    using this for error bar
+RMS of error in smajax = 2153.7m
+propagated error = sqrt(1250^2 + 2208^2) = 2537m
+
+ravat_ADK_PSG1250 has a different levels_points table name than ADKFinalBGA2500 

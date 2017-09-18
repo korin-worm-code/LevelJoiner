@@ -1,0 +1,19 @@
+cut off semi-major at 5km, at 7.5km
+go down to 20km depth
+smajor-sminor < 3km
+plot as larger of sdepth, smajor
+use 1degree buffer
+
+teamviewer: q1t1g3
+
+using region 83.5W,39N to 69W,51N
+cutting off at depth > 20km
+for smajor < 7.5km:
+average smajor error = 1.85392
+average sminor error = 1.27737
+average depth error = 1.97434
+
+for smajor < 5km:
+average smajor error = 1.74467
+average sminor error = 1.23833
+average depth error = 1.92092
